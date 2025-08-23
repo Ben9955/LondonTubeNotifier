@@ -18,5 +18,4 @@
     <ProjectReference Include="..\LondonTubeNotifier.Core\LondonTubeNotifier.Core.csproj" />
     <ProjectReference Include="..\LondonTubeNotifier.Infrastructure\LondonTubeNotifier.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

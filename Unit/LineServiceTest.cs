@@ -10,7 +10,7 @@ using LondonTubeNotifier.Core.Domain.Entities;
 using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Core.Exceptions;
 
-namespace Unit
+namespace UnitTests
 {
     public class LineServiceTest
     {

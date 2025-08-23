@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace Unit
+namespace UnitTests
 {
     public class LinesControllerTest
     {
