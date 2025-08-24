@@ -2,7 +2,9 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using LondonTubeNotifier.Core.Domain.Entities;
 using LondonTubeNotifier.Core.DTOs;
+using LondonTubeNotifier.Core.Exceptions;
 using LondonTubeNotifier.Infrastructure.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests
@@ -18,6 +20,18 @@ namespace IntegrationTests
             _client = factory.CreateClient();
         }
 
+        private async Task ResetLinesAsync(IEnumerable<Line>? lines = null)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Lines.RemoveRange(db.Lines);
+
+            if (lines != null) await db.Lines.AddRangeAsync(lines);
+
+            await db.SaveChangesAsync();
+        }
+
+        #region GetLines
         [Fact]
         public async Task GET_api_lines_ShouldReturn200_AndList()
         {
@@ -61,18 +75,60 @@ namespace IntegrationTests
             lines.Should().BeEmpty();
 
         }
+        #endregion
 
 
-        private async Task ResetLinesAsync(IEnumerable<Line>? lines = null)
+        #region GetLineByLineId
+
+        [Theory]
+        [InlineData("bakerloo")]
+        [InlineData("Bakerloo")]
+        public async Task GET_api_lines_ShouldReturn200_AndLine(string lineId)
         {
-            using var scope = _factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            db.Lines.RemoveRange(db.Lines);
+            // Arrange
+            var fakeLines = new List<Line>
+            {
+                new() { Id = "Bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
+                new() { Id = "Central", Code = "CL", Name = "Central Line", Color = "#E32017" },
+            };
 
-            if(lines != null) await db.Lines.AddRangeAsync(lines);
+            // Seeds with fake lines
+            await ResetLinesAsync(fakeLines);
 
-            await db.SaveChangesAsync();
+            //Act
+            HttpResponseMessage response = await _client.GetAsync($"/api/lines/{lineId}");
+            var line = await response.Content.ReadFromJsonAsync<LineResponseDTO>();
+
+            // Assert
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            line.Should().NotBeNull();
+            line.Id.Should().BeEquivalentTo(fakeLines[0].Id);
         }
 
+        [Fact]
+        public async Task GET_api_lines_ShouldReturn404_AndProblemDetail()
+        {
+            // Arrange
+            string invalidId = "InvalidId";
+            var fakeLines = new List<Line>
+            {
+                new() { Id = "Bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
+                new() { Id = "Central", Code = "CL", Name = "Central Line", Color = "#E32017" },
+            };
+
+            // Seeds with fake lines
+            await ResetLinesAsync(fakeLines);
+
+            // Act
+            HttpResponseMessage response = await _client.GetAsync($"/api/lines/{invalidId}");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+            var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+            problem.Should().NotBeNull();
+            problem.Title.Should().Be("Resource not found");
+            problem.Detail.Should().Contain(invalidId);
+        }
+
+        #endregion
     }
 }

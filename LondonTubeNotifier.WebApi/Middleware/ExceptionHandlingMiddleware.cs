@@ -6,11 +6,11 @@ namespace LondonTubeNotifier.WebApi.Middleware
 {
     public class ExceptionHandlingMiddleware
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
         private readonly RequestDelegate _next;
         private readonly IHostEnvironment _env;
 
-        public ExceptionHandlingMiddleware(ILogger logger, RequestDelegate next, IHostEnvironment inv)
+        public ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger, RequestDelegate next, IHostEnvironment inv)
         {
             _logger = logger;
             _next = next;

@@ -6,6 +6,7 @@ using LondonTubeNotifier.Core.Domain.RespositoryContracts;
 using LondonTubeNotifier.Infrastructure.Repositories;
 using LondonTubeNotifier.Core.MapperContracts;
 using LondonTubeNotifier.Core.Mappers;
+using LondonTubeNotifier.WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,8 @@ app.UseHttpLogging();
 
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

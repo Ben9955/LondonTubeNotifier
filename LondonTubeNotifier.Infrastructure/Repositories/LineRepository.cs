@@ -20,7 +20,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
 
         public async Task<Line?> GetLineByLineId(string lineId)
         {
-            return await _dbContext.Lines.FirstOrDefaultAsync(l => l.Id == lineId);
+            return await _dbContext.Lines.FirstOrDefaultAsync(l => l.Id.ToLower() == lineId.ToLower());
         }
 
     }
