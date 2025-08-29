@@ -38,8 +38,8 @@ namespace IntegrationTests
             // Arrange
             var fakeLines = new List<Line>
             {
-                new() { Id = "Bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
-                new() { Id = "Central", Code = "CL", Name = "Central Line", Color = "#E32017" },
+                new() { Id = "bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
+                new() { Id = "central", Code = "CL", Name = "Central Line", Color = "#E32017" },
             };
 
             // Seeds with fake lines
@@ -48,7 +48,7 @@ namespace IntegrationTests
             //Act
             HttpResponseMessage response = await _client.GetAsync("/api/lines");
 
-            var lines = await response.Content.ReadFromJsonAsync<List<LineResponseDTO>>();
+            var lines = await response.Content.ReadFromJsonAsync<List<LineDto>>();
 
             // Assert
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -67,7 +67,7 @@ namespace IntegrationTests
             //Act
             HttpResponseMessage response = await _client.GetAsync("/api/lines");
 
-            var lines = await response.Content.ReadFromJsonAsync<List<LineResponseDTO>>();
+            var lines = await response.Content.ReadFromJsonAsync<List<LineDto>>();
 
             // Assert
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -88,8 +88,8 @@ namespace IntegrationTests
             // Arrange
             var fakeLines = new List<Line>
             {
-                new() { Id = "Bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
-                new() { Id = "Central", Code = "CL", Name = "Central Line", Color = "#E32017" },
+                new() { Id = "bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
+                new() { Id = "central", Code = "CL", Name = "Central Line", Color = "#E32017" },
             };
 
             // Seeds with fake lines
@@ -97,7 +97,7 @@ namespace IntegrationTests
 
             //Act
             HttpResponseMessage response = await _client.GetAsync($"/api/lines/{lineId}");
-            var line = await response.Content.ReadFromJsonAsync<LineResponseDTO>();
+            var line = await response.Content.ReadFromJsonAsync<LineDto>();
 
             // Assert
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -112,8 +112,8 @@ namespace IntegrationTests
             string invalidId = "InvalidId";
             var fakeLines = new List<Line>
             {
-                new() { Id = "Bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
-                new() { Id = "Central", Code = "CL", Name = "Central Line", Color = "#E32017" },
+                new() { Id = "bakerloo", Code = "BL", Name = "Bakerloo Line", Color = "#894E24" },
+                new() { Id = "central", Code = "CL", Name = "Central Line", Color = "#E32017" },
             };
 
             // Seeds with fake lines

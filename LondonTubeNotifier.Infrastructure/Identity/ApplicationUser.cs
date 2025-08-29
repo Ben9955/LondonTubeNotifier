@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LondonTubeNotifier.Infrastructure.Entities
 {
-    public class ApplicationUser : IdentityUser<Guid>
+    public class ApplicationUser : IdentityUser<Guid>, IUser
     {
         public string? FullName { get; set; }
         public string? RefreshToken { get; set; }

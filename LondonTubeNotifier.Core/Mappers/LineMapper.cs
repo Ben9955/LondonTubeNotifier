@@ -6,9 +6,9 @@ namespace LondonTubeNotifier.Core.Mappers
 {
     public class LineMapper : ILineMapper
     {
-        public LineResponseDTO ToDto(Line line)
+        public LineDto ToDto(Line line)
         {
-            return new LineResponseDTO
+            return new LineDto
             {
                 Id = line.Id,
                 Code = line.Code,
@@ -17,7 +17,7 @@ namespace LondonTubeNotifier.Core.Mappers
             };
         }
 
-        public List<LineResponseDTO> ToDtoList(IEnumerable<Line> lines)
+        public List<LineDto> ToDtoList(IEnumerable<Line> lines)
         {
             return lines.Select(l => ToDto(l)).ToList();
         }

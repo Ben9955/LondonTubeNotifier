@@ -5,24 +5,23 @@ namespace LondonTubeNotifier.Core.ServiceContracts
 
 
     /// <summary>
-    /// Represents business logic for manipulating Line entity
+    /// Provides business logic for managing lines.
     /// </summary>
     public interface ILineService
     {
         /// <summary>
         /// Gets all the lines.
         /// </summary>
-        /// <returns>Returns a list of Lines as LineResponseDTO</returns>
-        Task<List<LineResponseDTO>> GetLinesAsync();
+        /// <returns>A task that returns a collection of <see cref="LineDto"/>.</returns>
+        Task<IEnumerable<LineDto>> GetLinesAsync();
 
         /// <summary>
         /// Gets a line by its Id.
         /// </summary>
         /// <param name="lineId">The Id of the line</param>
-        /// <returns>A LineResponseDTO if found</returns>
+        /// <returns>A task that returns a collection of <see cref="LineDto"/> for the given lineId, or null if not found.</returns>
         /// <exception cref="DomainValidationException">Thrown when lineId is null or empty</exception>
         /// <exception cref="DomainNotFoundException">Thrown when line with specified Id does not exist</exception>
-        Task<LineResponseDTO?> GetLineByLineIdAsync(string lineId);
-
+        Task<LineDto?> GetLineByLineIdAsync(string lineId);
     }
 }

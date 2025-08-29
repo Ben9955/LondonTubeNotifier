@@ -1,6 +1,6 @@
 ﻿namespace LondonTubeNotifier.Core.DTOs
 {
-    public class LineResponseDTO
+    public class LineDto
     { 
         public string Id { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;

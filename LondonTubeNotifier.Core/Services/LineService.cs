@@ -22,7 +22,7 @@ namespace LondonTubeNotifier.Core.Services
             _logger = logger;
         }
 
-        public async Task<LineResponseDTO?> GetLineByLineIdAsync(string lineId)
+        public async Task<LineDto?> GetLineByLineIdAsync(string lineId)
         {
             if (string.IsNullOrWhiteSpace(lineId))
             {
@@ -31,7 +31,7 @@ namespace LondonTubeNotifier.Core.Services
             }
 
             _logger.LogInformation("Fetching line with LineId: {LineId}", lineId);
-            Line? line = await _lineRepository.GetLineByLineId(lineId);
+            Line? line = await _lineRepository.GetLineByLineIdAsync(lineId.ToLower());
 
             if (line == null)
             {
@@ -45,9 +45,9 @@ namespace LondonTubeNotifier.Core.Services
 
         }
 
-        public async Task<List<LineResponseDTO>> GetLinesAsync()
+        public async Task<IEnumerable<LineDto>> GetLinesAsync()
         {
-            List<Line> lines = await _lineRepository.GetLines();
+            List<Line> lines = await _lineRepository.GetLinesAsync();
 
             return _lineMapper.ToDtoList(lines);
         }

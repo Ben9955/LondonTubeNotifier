@@ -24,7 +24,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// </summary>
         /// <returns>Return a list of LineResponseDTOs</returns>
         [HttpGet]
-        public async Task<ActionResult<List<LineResponseDTO>>> GetLines()
+        public async Task<ActionResult<IEnumerable<LineDto>>> GetLines()
         {
             _logger.LogInformation("GetLines endpoint called");
 
@@ -40,11 +40,11 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// <param name="lineId">Line id</param>
         /// <returns>Return a LineResponseDTO</returns>
         [HttpGet("{lineId}")]
-        public async Task<ActionResult<LineResponseDTO>> GetLine(string lineId)
+        public async Task<ActionResult<LineDto>> GetLine(string lineId)
         {
             _logger.LogInformation("GetLine endpoint called");
 
-            LineResponseDTO? line = await _lineService.GetLineByLineIdAsync(lineId);
+            LineDto? line = await _lineService.GetLineByLineIdAsync(lineId);
 
             return Ok(line);
         }

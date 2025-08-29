@@ -5,7 +5,7 @@ namespace LondonTubeNotifier.Core.MapperContracts
 {
     public interface ILineMapper
     {
-        LineResponseDTO ToDto(Line line);
-        List<LineResponseDTO> ToDtoList(IEnumerable<Line> lines);
+        LineDto ToDto(Line line);
+        List<LineDto> ToDtoList(IEnumerable<Line> lines);
     }
 }

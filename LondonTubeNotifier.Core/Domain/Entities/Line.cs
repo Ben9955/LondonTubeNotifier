@@ -1,4 +1,6 @@
-﻿namespace LondonTubeNotifier.Core.Domain.Entities
+﻿using LondonTubeNotifier.Core.Domain.Interfaces;
+
+namespace LondonTubeNotifier.Core.Domain.Entities
 {
     public class Line
     {
