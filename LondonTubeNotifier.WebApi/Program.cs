@@ -7,6 +7,13 @@ using LondonTubeNotifier.Infrastructure.Repositories;
 using LondonTubeNotifier.Core.MapperContracts;
 using LondonTubeNotifier.Core.Mappers;
 using LondonTubeNotifier.WebApi.Middleware;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using LondonTubeNotifier.Core.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using LondonTubeNotifier.Infrastructure.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +29,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<ILineService, LineService>();
 builder.Services.AddScoped<ILineRepository, LineRepository>();
 builder.Services.AddSingleton<ILineMapper, LineMapper>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings"));
 
 builder.Logging.ClearProviders().AddConsole();
 if (builder.Environment.IsDevelopment())
@@ -35,6 +46,38 @@ builder.Services.AddHttpLogging(logging =>
                             Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode;
 });
 
+
+
+
+// Identity
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!))
+        };
+    });
+
 var app = builder.Build();
 
 app.UseHttpLogging();
@@ -44,6 +87,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 

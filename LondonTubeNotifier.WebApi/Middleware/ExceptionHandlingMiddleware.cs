@@ -49,11 +49,23 @@ namespace LondonTubeNotifier.WebApi.Middleware
                     Instance = context.Request.Path
                 });
             }
+            catch (EntityUpdateException ex)
+            {
+                _logger.LogError(ex, "Entity update failed: {Message}", ex.Message);
+
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsJsonAsync(new ProblemDetails
+                {
+                    Status = 500,
+                    Title = "An unexpected error occurred.",
+                    Detail = "An unexpected error occurred. Please try again.",
+                    Instance = context.Request.Path
+                });
+            }
             catch (Exception ex) 
             {
                 _logger.LogError(ex, "Unhandled exception on {Method} {Path}", context.Request.Method, context.Request.Path);
 
-                context.Response.ContentType = "application/json";
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
                 var problem = new ProblemDetails

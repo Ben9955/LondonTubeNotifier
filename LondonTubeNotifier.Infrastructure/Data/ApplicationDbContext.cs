@@ -1,4 +1,8 @@
 ﻿using LondonTubeNotifier.Core.Domain.Entities;
+using LondonTubeNotifier.Core.Domain.Interfaces;
+using LondonTubeNotifier.Infrastructure.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LondonTubeNotifier.Infrastructure.Data
@@ -6,12 +10,14 @@ namespace LondonTubeNotifier.Infrastructure.Data
 
 
 
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : 
+        IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
         public ApplicationDbContext(DbContextOptions option) : base(option) { }
         public ApplicationDbContext() { }
 
         public DbSet<Line> Lines { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -34,6 +40,12 @@ namespace LondonTubeNotifier.Infrastructure.Data
            };
 
             modelBuilder.Entity<Line>().HasData(lines);
+
+            // Many-to-many between ApplicationUser and Line
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(u => u.Subscriptions)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("UserLineSubscription"));
 
         }
     }
