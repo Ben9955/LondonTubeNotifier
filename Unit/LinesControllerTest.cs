@@ -29,7 +29,7 @@ namespace UnitTests
         public async Task GetLines_ShouldReturnOkWithList_WhenServiceReturnsLines()
         { 
             //Arrange
-            var lines = _fixture.CreateMany<LineResponseDTO>(3).ToList();
+            var lines = _fixture.CreateMany<LineDto>(3).ToList();
             _lineService.Setup(l => l.GetLinesAsync()).ReturnsAsync(lines);
 
             //Act
@@ -37,7 +37,7 @@ namespace UnitTests
 
             //Assert
             result.Result.Should().BeOfType<OkObjectResult>()
-                .Which.Value.Should().BeAssignableTo<List<LineResponseDTO>>()
+                .Which.Value.Should().BeAssignableTo<List<LineDto>>()
                 .Which.Should().BeEquivalentTo(lines);
             _lineService.Verify(s => s.GetLinesAsync(), Times.Once);
         }
@@ -47,7 +47,7 @@ namespace UnitTests
         public async Task GetLine_ShouldReturnOkWithLine_WhenServiceReturnsLine()
         {
             //Arrange
-            var line = _fixture.Create<LineResponseDTO>();
+            var line = _fixture.Create<LineDto>();
             _lineService.Setup(l => l.GetLineByLineIdAsync(line.Id)).ReturnsAsync(line);
 
             //Act
@@ -55,7 +55,7 @@ namespace UnitTests
 
             //Assert
             result.Result.Should().BeOfType<OkObjectResult>()
-                .Which.Value.Should().BeAssignableTo<LineResponseDTO>()
+                .Which.Value.Should().BeAssignableTo<LineDto>()
                 .Which.Should().BeEquivalentTo(line);
             _lineService.Verify(s => s.GetLineByLineIdAsync(line.Id), Times.Once);
         }

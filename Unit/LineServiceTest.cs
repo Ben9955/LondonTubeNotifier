@@ -42,9 +42,9 @@ namespace UnitTests
         {
             //Arrange
             var lines = _fixture.CreateMany<Line>(4).ToList();
-            var linesDtos = _fixture.CreateMany<LineResponseDTO>(4).ToList();
+            var linesDtos = _fixture.CreateMany<LineDto>(4).ToList();
 
-            _lineRepository.Setup(r => r.GetLines()).ReturnsAsync(lines);
+            _lineRepository.Setup(r => r.GetLinesAsync()).ReturnsAsync(lines);
             _lineMapper.Setup(m => m.ToDtoList(lines)).Returns(linesDtos);
 
             // Act
@@ -65,9 +65,9 @@ namespace UnitTests
         {
             //Arrange
             var lines = new List<Line>();
-            var linesDtos = new List<LineResponseDTO>();
+            var linesDtos = new List<LineDto>();
 
-            _lineRepository.Setup(r => r.GetLines()).ReturnsAsync(lines);
+            _lineRepository.Setup(r => r.GetLinesAsync()).ReturnsAsync(lines);
             _lineMapper.Setup(m => m.ToDtoList(lines)).Returns(linesDtos);
 
             // Act
@@ -75,7 +75,7 @@ namespace UnitTests
 
             //Assert
             result.Should().BeEmpty();
-            _lineRepository.Verify(r => r.GetLines(), Times.Once);
+            _lineRepository.Verify(r => r.GetLinesAsync(), Times.Once);
             _lineMapper.Verify(m => m.ToDtoList(lines), Times.Once);
         }
 
@@ -89,9 +89,9 @@ namespace UnitTests
         {
             //Arrange
             var line = _fixture.Create<Line>();
-            var lineDto = _fixture.Create<LineResponseDTO>();
+            var lineDto = _fixture.Create<LineDto>();
 
-            _lineRepository.Setup(r => r.GetLineByLineId(It.IsAny<string>())).ReturnsAsync(line);
+            _lineRepository.Setup(r => r.GetLineByLineIdAsync(It.IsAny<string>())).ReturnsAsync(line);
             _lineMapper.Setup(m => m.ToDto(It.Is<Line>(l => l.Id == line.Id))).Returns(lineDto);
 
             // Act
@@ -115,7 +115,7 @@ namespace UnitTests
             //Assert
             await action.Should().ThrowAsync<DomainValidationException>();
 
-            _lineRepository.Verify(r => r.GetLineByLineId(It.IsAny<string>()), Times.Never);
+            _lineRepository.Verify(r => r.GetLineByLineIdAsync(It.IsAny<string>()), Times.Never);
             _lineMapper.Verify(m => m.ToDto(It.IsAny<Line>()), Times.Never);
         }
 
@@ -126,7 +126,7 @@ namespace UnitTests
 
             //Arrange
             string lineId = "InvalidId";
-            _lineRepository.Setup(r => r.GetLineByLineId(lineId)).ReturnsAsync((Line?)null);
+            _lineRepository.Setup(r => r.GetLineByLineIdAsync(lineId)).ReturnsAsync((Line?)null);
 
             // Act
             Func<Task> action = async () => await _lineService.GetLineByLineIdAsync(lineId);

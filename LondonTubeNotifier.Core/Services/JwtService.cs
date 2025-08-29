@@ -22,12 +22,13 @@ namespace LondonTubeNotifier.Core.Services
         public AuthenticationDto CreateJwtToken(JwtUserDto user)
         {
             DateTime expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             Claim[] claims = new Claim[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, now.ToString(), ClaimValueTypes.Integer64), 
                 new Claim(ClaimTypes.Name, user.UserName)
             };
 
