@@ -18,25 +18,24 @@ namespace LondonTubeNotifier.WebApi.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtService _jwtService;
+
         public AccountController(UserManager<ApplicationUser> userManager, IJwtService jwtService)
         {
             _userManager = userManager;
             _jwtService = jwtService;
         }
 
-
         /// <summary>
-        /// Registers a new user in the database.
+        /// Registers a new user.
         /// </summary>
-        /// <param name="request">The registration request DTO containing username, email, password, etc.</param>
-        /// <returns>
-        /// Returns the newly created user data along with an AccessToken and RefreshToken for authentication.
-        /// </returns>
-        /// <exception cref="EntityUpdateException">Thrown if there is an error saving the user's refresh token.</exception>
+        /// <param name="request">Registration details.</param>
+        /// <returns>Authentication data for the new user.</returns>
+        /// <response code="200">User registered successfully.</response>
+        /// <response code="400">Username or email already exists.</response>
+        /// <remarks>Returns AccessToken and RefreshToken on success.</remarks>
         [HttpPost("register")]
         public async Task<ActionResult<AuthenticationResponse>> Register(RegisterRequest request)
         {
-
             if (await _userManager.FindByNameAsync(request.UserName) != null)
                 return BadRequest(new { Error = "Username already taken" });
 
@@ -51,110 +50,82 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 PhoneNumber = request.PhoneNumber,
             };
 
-           IdentityResult result = await _userManager.CreateAsync(user, request.Password);
-
+            var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                // Return validation errors from Identity
                 var errors = result.Errors.Select(e => e.Description);
                 return BadRequest(new { Errors = errors });
             }
 
-            JwtUserDto jwtUserDto = new JwtUserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName
-            };
+            var jwtUser = new JwtUserDto { Id = user.Id, UserName = user.UserName };
+            var auth = _jwtService.CreateJwtToken(jwtUser);
 
-            AuthenticationDto authentication = _jwtService.CreateJwtToken(jwtUserDto);
+            user.RefreshToken = auth.RefreshToken;
+            user.RefreshTokenExpiration = auth.RefreshTokenExpiration;
+            await _userManager.UpdateAsync(user);
 
-            // save refreshToken to the database
-            user.RefreshToken = authentication.RefreshToken;
-            user.RefreshTokenExpiration = authentication.RefreshTokenExpiration;
-
-            try
-            {
-                await _userManager.UpdateAsync(user);
-            }
-            catch (Exception ex)
-            {
-                throw new EntityUpdateException("An error occurred while updating the user.", ex);
-            }
-
-            AuthenticationResponse response = new AuthenticationResponse()
+            var response = new AuthenticationResponse
             {
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
                 FullName = user.FullName,
-                RefreshToken = authentication.RefreshToken,
-                AccessToken = authentication.AccessToken,
-                AccessTokenExpiration = authentication.AccessTokenExpiration,
+                RefreshToken = auth.RefreshToken,
+                AccessToken = auth.AccessToken,
+                AccessTokenExpiration = auth.AccessTokenExpiration
             };
 
             return Ok(response);
         }
 
-
         /// <summary>
-        /// Authenticates a user with username/email and password.
+        /// Logs in a user with email/username and password.
         /// </summary>
-        /// <param name="request">Login request DTO containing EmailOrUsername and Password.</param>
-        /// <returns>
-        /// Returns an AuthenticationResponse containing AccessToken and RefreshToken if successful.
-        /// </returns>
-        /// <exception cref="EntityUpdateException">Thrown if there is an error updating the user's refresh token.</exception>
+        /// <param name="request">Login details.</param>
+        /// <returns>Authentication data on success.</returns>
+        /// <response code="200">Login successful.</response>
+        /// <response code="401">Invalid credentials.</response>
+        /// <remarks>Returns AccessToken and RefreshToken on success.</remarks>
         [HttpPost("login")]
         public async Task<ActionResult<AuthenticationResponse>> Login(LoginRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.EmailOrUsername)
-            ?? await _userManager.FindByEmailAsync(request.EmailOrUsername);
+                       ?? await _userManager.FindByEmailAsync(request.EmailOrUsername);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-            {
                 return Unauthorized("Invalid credentials");
-            }
 
-            JwtUserDto jwtUserDto = new JwtUserDto { Id = user.Id, UserName = user.UserName! };
+            var jwtUser = new JwtUserDto { Id = user.Id, UserName = user.UserName! };
+            var auth = _jwtService.CreateJwtToken(jwtUser);
 
-            AuthenticationDto authentication = _jwtService.CreateJwtToken(jwtUserDto);
+            user.RefreshToken = auth.RefreshToken;
+            user.RefreshTokenExpiration = auth.RefreshTokenExpiration;
+            await _userManager.UpdateAsync(user);
 
-            user.RefreshToken = authentication.RefreshToken;
-            user.RefreshTokenExpiration = authentication.RefreshTokenExpiration;
-
-            try
-            {
-                await _userManager.UpdateAsync(user);
-            }
-            catch (Exception ex)
-            {
-                throw new EntityUpdateException("An error occurred while updating the user.", ex);
-            }
-
-            AuthenticationResponse response = new AuthenticationResponse()
+            var response = new AuthenticationResponse
             {
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
                 FullName = user.FullName,
-                RefreshToken = authentication.RefreshToken,
-                AccessToken = authentication.AccessToken,
-                AccessTokenExpiration = authentication.AccessTokenExpiration
+                RefreshToken = auth.RefreshToken,
+                AccessToken = auth.AccessToken,
+                AccessTokenExpiration = auth.AccessTokenExpiration
             };
 
             return Ok(response);
         }
 
         /// <summary>
-        /// Logs out the currently authenticated user by clearing their refresh token.
+        /// Logs out the user by clearing their refresh token.
         /// </summary>
-        /// <returns>No content (204) on success.</returns>
-        /// <exception cref="EntityUpdateException">Thrown if there is an error clearing the user's refresh token.</exception>
+        /// <returns>No content on success.</returns>
+        /// <response code="204">User logged out successfully.</response>
+        /// <remarks>Clears refresh token from the database.</remarks>
         [HttpGet("logout")]
         public async Task<IActionResult> GetLogout()
         {
-            var userId = User.FindFirstValue("sub"); 
-            
+            var userId = User.FindFirstValue("sub");
             if (userId != null)
             {
                 var user = await _userManager.FindByIdAsync(userId);
@@ -162,18 +133,9 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 {
                     user.RefreshToken = null;
                     user.RefreshTokenExpiration = null;
-
-                    try
-                    {
-                        await _userManager.UpdateAsync(user);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new EntityUpdateException("Failed to clear refresh token.", ex);
-                    }
+                    await _userManager.UpdateAsync(user);
                 }
             }
-
             return NoContent();
         }
     }

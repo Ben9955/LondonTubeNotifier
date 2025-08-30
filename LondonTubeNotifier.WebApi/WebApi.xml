@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LondonTubeNotifier.WebApi</name>
+    </assembly>
+    <members>
+        <member name="T:LondonTubeNotifier.WebApi.Controllers.AccountController">
+            <summary>
+            Handles user authentication: registration, login, and logout.
+            </summary>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.Register(LondonTubeNotifier.WebApi.Dtos.RegisterRequest)">
+            <summary>
+            Registers a new user.
+            </summary>
+            <param name="request">Registration details.</param>
+            <returns>Authentication data for the new user.</returns>
+            <response code="200">User registered successfully.</response>
+            <response code="400">Username or email already exists.</response>
+            <remarks>Returns AccessToken and RefreshToken on success.</remarks>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.Login(LondonTubeNotifier.WebApi.Dtos.LoginRequest)">
+            <summary>
+            Logs in a user with email/username and password.
+            </summary>
+            <param name="request">Login details.</param>
+            <returns>Authentication data on success.</returns>
+            <response code="200">Login successful.</response>
+            <response code="401">Invalid credentials.</response>
+            <remarks>Returns AccessToken and RefreshToken on success.</remarks>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GetLogout">
+            <summary>
+            Logs out the user by clearing their refresh token.
+            </summary>
+            <returns>No content on success.</returns>
+            <response code="204">User logged out successfully.</response>
+            <remarks>Clears refresh token from the database.</remarks>
+        </member>
+        <member name="T:LondonTubeNotifier.WebApi.Controllers.LinesController">
+            <summary>
+            Provides endpoints to manage and retrieve information about London Tube lines.
+            </summary>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.LinesController.GetLines">
+            <summary>
+            Retrieves all London Tube lines.
+            </summary>
+            <returns>A list of Tube lines.</returns>
+            <response code="200">Returns all Tube lines.</response>
+            <remarks>Use this to get a full list of lines available in the system.</remarks>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.LinesController.GetLine(System.String)">
+            <summary>
+            Retrieves a specific Tube line by its unique ID.
+            </summary>
+            <param name="lineId">The unique ID of the Tube line.</param>
+            <returns>The requested Tube line.</returns>
+            <response code="200">Returns the Tube line.</response>
+            <response code="404">Line not found.</response>
+            <response code="400">Line ID is empty or whitespace.</response>
+            <remarks>Use this to get details for a single line.</remarks>
+        </member>
+        <member name="T:LondonTubeNotifier.WebApi.Controllers.SubscriptionsController">
+            <summary>
+            Manage user subscriptions to Tube lines.
+            Users can subscribe, unsubscribe, and view their subscribed lines.
+            </summary>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.SubscriptionsController.SubscribeToLine(System.String)">
+            <summary>
+            Subscribe the logged-in user to a Tube line.
+            </summary>
+            <param name="lineId">Tube line unique ID.</param>
+            <returns>No content if successful.</returns>
+            <response code="204">Subscription created.</response>
+            <response code="400">Already subscribed.</response>
+            <response code="401">User not authenticated.</response>
+            <response code="404">Line not found.</response>
+            <remarks>Use this to start receiving notifications for a line.</remarks>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.SubscriptionsController.DeleteSubscription(System.String)">
+            <summary>
+            Unsubscribe the logged-in user from a Tube line.
+            </summary>
+            <param name="lineId">Tube line unique ID.</param>
+            <returns>No content if successful.</returns>
+            <response code="204">Subscription removed.</response>
+            <response code="401">User not authenticated.</response>
+            <response code="404">Line not found or not subscribed.</response>
+            <remarks>Use this to stop receiving notifications for a line.</remarks>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.SubscriptionsController.GetLinesForUser">
+            <summary>
+            Get all Tube lines the logged-in user is subscribed to.
+            </summary>
+            <returns>List of subscribed Tube lines.</returns>
+            <response code="200">Returns subscribed lines.</response>
+            <response code="401">User not authenticated.</response>
+            <remarks>Shows current subscriptions for the logged-in user.</remarks>
+        </member>
+    </members>
+</doc>
