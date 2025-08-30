@@ -9,8 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LondonTubeNotifier.WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    /// <summary>
+    /// Handles user authentication: registration, login, and logout.
+    /// </summary>
     [ApiController]
+    [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -21,6 +24,15 @@ namespace LondonTubeNotifier.WebApi.Controllers
             _jwtService = jwtService;
         }
 
+
+        /// <summary>
+        /// Registers a new user in the database.
+        /// </summary>
+        /// <param name="request">The registration request DTO containing username, email, password, etc.</param>
+        /// <returns>
+        /// Returns the newly created user data along with an AccessToken and RefreshToken for authentication.
+        /// </returns>
+        /// <exception cref="EntityUpdateException">Thrown if there is an error saving the user's refresh token.</exception>
         [HttpPost("register")]
         public async Task<ActionResult<AuthenticationResponse>> Register(RegisterRequest request)
         {
@@ -84,6 +96,14 @@ namespace LondonTubeNotifier.WebApi.Controllers
         }
 
 
+        /// <summary>
+        /// Authenticates a user with username/email and password.
+        /// </summary>
+        /// <param name="request">Login request DTO containing EmailOrUsername and Password.</param>
+        /// <returns>
+        /// Returns an AuthenticationResponse containing AccessToken and RefreshToken if successful.
+        /// </returns>
+        /// <exception cref="EntityUpdateException">Thrown if there is an error updating the user's refresh token.</exception>
         [HttpPost("login")]
         public async Task<ActionResult<AuthenticationResponse>> Login(LoginRequest request)
         {
@@ -125,7 +145,11 @@ namespace LondonTubeNotifier.WebApi.Controllers
             return Ok(response);
         }
 
-
+        /// <summary>
+        /// Logs out the currently authenticated user by clearing their refresh token.
+        /// </summary>
+        /// <returns>No content (204) on success.</returns>
+        /// <exception cref="EntityUpdateException">Thrown if there is an error clearing the user's refresh token.</exception>
         [HttpGet("logout")]
         public async Task<IActionResult> GetLogout()
         {
