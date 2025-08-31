@@ -1,12 +1,15 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
+using IntegrationTests.Factory;
 using LondonTubeNotifier.Infrastructure.Data;
-using LondonTubeNotifier.Infrastructure.Entities;
-using LondonTubeNotifier.WebApi.Dtos;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using LondonTubeNotifier.Infrastructure.Entities;
+using Microsoft.AspNetCore.Identity;
+using LondonTubeNotifier.WebApi.Dtos;
+using IntegrationTests.Helpers;
 
-namespace IntegrationTests
+namespace IntegrationTests.Integration
 {
     public class AccountControllerIntegrationTest : IClassFixture<WebFactory>
     {
@@ -19,37 +22,22 @@ namespace IntegrationTests
             _client = factory.CreateClient();
         }
 
-        private async Task ResetUsersAsync(IEnumerable<ApplicationUser>? users = null)
+        private async Task ResetUsersAsync(bool emptyTable = false)
         {
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // Clear all users
-            db.Users.RemoveRange(db.Users);
-            await db.SaveChangesAsync();
-
-            // Recreate users via Identity
-            if (users != null)
-            {
-                foreach (var user in users)
-                {
-                    var result = await userManager.CreateAsync(user, "Password123!");
-                    if (!result.Succeeded)
-                    {
-                        throw new Exception($"Failed to seed user {user.UserName}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                    }
-                }
-            }
+            await Utilities.ResetUsersAsync(db, userManager, emptyTable);
         }
 
 
         #region Register
 
         [Fact]
-        public async Task POST_api_account_register_ShouldReturn200_WhenValid()
+        public async Task Register_ShouldReturn200_WhenValid()
         {
-            await ResetUsersAsync();
+            await ResetUsersAsync(true);
 
             var request = new RegisterRequest
             {
@@ -64,7 +52,7 @@ namespace IntegrationTests
             var response = await _client.PostAsJsonAsync("/api/account/register", request);
             var result = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
 
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             result.Should().NotBeNull();
             result.UserName.Should().Be(request.UserName);
             result.Email.Should().Be(request.Email);
@@ -73,20 +61,14 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task POST_api_account_register_ShouldReturn400_WhenUsernameTaken()
+        public async Task Register_ShouldReturn400_WhenUsernameTaken()
         {
-            var existingUser = new ApplicationUser
-            {
-                UserName = "existinguser",
-                Email = "existing@example.com",
-                FullName = "Existing User"
-            };
-            await ResetUsersAsync(new[] { existingUser });
+            await ResetUsersAsync();
 
             var request = new RegisterRequest
             {
-                UserName = "existinguser",
-                Email = "newemail@example.com",
+                UserName = "existinguser1",
+                Email = "existing3@example.com",
                 FullName = "New User",
                 Password = "Password123!",
                 ConfirmPassword = "Password123!"
@@ -95,26 +77,20 @@ namespace IntegrationTests
             var response = await _client.PostAsJsonAsync("/api/account/register", request);
             var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
 
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             result.Should().ContainKey("error");
             result["error"].Should().Be("Username already taken");
         }
 
         [Fact]
-        public async Task POST_api_account_register_ShouldReturn400_WhenEmailTaken()
+        public async Task Register_ShouldReturn400_WhenEmailTaken()
         {
-            var existingUser = new ApplicationUser
-            {
-                UserName = "existinguser",
-                Email = "taken@example.com",
-                FullName = "Existing User"
-            };
-            await ResetUsersAsync(new[] { existingUser });
+            await ResetUsersAsync();
 
             var request = new RegisterRequest
             {
                 UserName = "newuser",
-                Email = "taken@example.com",
+                Email = "existing1@example.com",
                 FullName = "New User",
                 Password = "Password123!",
                 ConfirmPassword = "Password123!"
@@ -122,8 +98,8 @@ namespace IntegrationTests
 
             var response = await _client.PostAsJsonAsync("/api/account/register", request);
             var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            Console.WriteLine(result);
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             result.Should().ContainKey("error");
             result["error"].Should().Be("Email already registered");
         }
@@ -133,42 +109,29 @@ namespace IntegrationTests
         #region Login
 
         [Fact]
-        public async Task POST_api_account_login_ShouldReturn200_WhenValid()
+        public async Task Login_ShouldReturn200_WhenValid()
         {
-            var existingUser = new ApplicationUser
-            {
-                UserName = "loginuser",
-                Email = "login@example.com",
-                FullName = "Login User"
-            };
-
-            await ResetUsersAsync(new[] { existingUser });
-
+            await ResetUsersAsync();
             var request = new LoginRequest
             {
-                EmailOrUsername = "loginuser",
+                EmailOrUsername = "existinguser1",
                 Password = "Password123!"
             };
 
             var response = await _client.PostAsJsonAsync("/api/account/login", request);
             var result = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
 
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             result.Should().NotBeNull();
-            result.UserName.Should().Be(existingUser.UserName);
+            result.UserName.Should().Be("existinguser1");
             result.AccessToken.Should().NotBeNullOrWhiteSpace();
         }
 
+
         [Fact]
-        public async Task POST_api_account_login_ShouldReturn401_WhenInvalidPassword()
+        public async Task Login_ShouldReturn401_WhenInvalidPassword()
         {
-            var existingUser = new ApplicationUser
-            {
-                UserName = "loginuser2",
-                Email = "login2@example.com",
-                FullName = "Login User 2"
-            };
-            await ResetUsersAsync(new[] { existingUser });
+            await ResetUsersAsync();
 
             var request = new LoginRequest
             {
@@ -177,13 +140,13 @@ namespace IntegrationTests
             };
 
             var response = await _client.PostAsJsonAsync("/api/account/login", request);
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
-        public async Task POST_api_account_login_ShouldReturn401_WhenUserNotFound()
+        public async Task Login_ShouldReturn401_WhenUserNotFound()
         {
-            await ResetUsersAsync();
+            await ResetUsersAsync(true);
 
             var request = new LoginRequest
             {
@@ -192,7 +155,7 @@ namespace IntegrationTests
             };
 
             var response = await _client.PostAsJsonAsync("/api/account/login", request);
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         #endregion
@@ -200,20 +163,14 @@ namespace IntegrationTests
         #region Logout
 
         [Fact]
-        public async Task GET_api_account_logout_ShouldReturn204()
+        public async Task Logout_ShouldReturn204()
         {
-            var existingUser = new ApplicationUser
-            {
-                UserName = "logoutuser",
-                Email = "logout@example.com",
-                FullName = "Logout User"
-            };
-            await ResetUsersAsync(new[] { existingUser });
+            await ResetUsersAsync();
 
             _client.DefaultRequestHeaders.Add("Authorization", "Bearer faketoken");
-
             var response = await _client.GetAsync("/api/account/logout");
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
 
         #endregion

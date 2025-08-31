@@ -1,6 +1,4 @@
-﻿using Azure;
-using LondonTubeNotifier.Core.Domain.Entities;
-using LondonTubeNotifier.Core.DTOs;
+﻿using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Core.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
 

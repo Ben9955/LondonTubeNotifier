@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using LondonTubeNotifier.Core.DTOs;
-using LondonTubeNotifier.Core.Exceptions;
 using LondonTubeNotifier.Core.ServiceContracts;
 using LondonTubeNotifier.Infrastructure.Entities;
 using LondonTubeNotifier.WebApi.Dtos;
