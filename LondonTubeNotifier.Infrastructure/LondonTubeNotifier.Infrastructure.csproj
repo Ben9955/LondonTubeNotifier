@@ -8,6 +8,7 @@
 
 	<ItemGroup>
     <Folder Include="ExternalAPIs\" />
+    <Folder Include="Workers\" />
   </ItemGroup>
 
   <ItemGroup>
