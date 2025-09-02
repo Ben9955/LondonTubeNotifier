@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DocumentationFile>WebApi.xml</DocumentationFile>
+    <UserSecretsId>4c62286a-f455-4ee8-9c6d-e0c37ba4cb6c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
