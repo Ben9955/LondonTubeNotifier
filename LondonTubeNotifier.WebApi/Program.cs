@@ -17,6 +17,8 @@ using System.IdentityModel.Tokens.Jwt;
 using LondonTubeNotifier.Infrastructure.ExternalAPIs;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
+using LondonTubeNotifier.Infrastructure.Workers;
+using Microsoft.Extensions.Caching.Memory;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
 
@@ -32,11 +34,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 builder.Services.AddScoped<ILineService, LineService>();
-builder.Services.AddScoped<ILineRepository, LineRepository>();
 builder.Services.AddScoped<IUserLineSubscriptionService, UserLineSubscriptionService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<ILineMapper, LineMapper>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddSingleton<ITflApiService, TflApiService>();
+
+builder.Services.AddScoped<LineRepository>();
+builder.Services.AddScoped<ILineRepository>(sp =>
+    new CachedLineRepository(
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<LineRepository>()
+    )
+);
+
+
+builder.Services.AddHostedService<TflLineStatusWorker>();
 
 builder.Services.AddHttpClient<ITflApiService, TflApiService>((sp, client) =>
 {
