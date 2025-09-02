@@ -8,13 +8,15 @@ using LondonTubeNotifier.Core.MapperContracts;
 using LondonTubeNotifier.Core.Mappers;
 using LondonTubeNotifier.WebApi.Middleware;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using LondonTubeNotifier.Core.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using LondonTubeNotifier.Infrastructure.Entities;
 using System.IdentityModel.Tokens.Jwt;
+using LondonTubeNotifier.Infrastructure.ExternalAPIs;
+using Microsoft.Extensions.Options;
+using System.Net.Http;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
 
@@ -36,8 +38,18 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<ILineMapper, LineMapper>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+builder.Services.AddHttpClient<ITflApiService, TflApiService>((sp, client) =>
+{
+    var tflOptions = sp.GetRequiredService<IOptions<TflSettings>>().Value;
+    client.BaseAddress = new Uri(tflOptions.BaseUrl);
+    client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+});
+
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<TflSettings>(
+    builder.Configuration.GetSection("Tfl"));
+
 
 builder.Logging.ClearProviders().AddConsole();
 if (builder.Environment.IsDevelopment())
