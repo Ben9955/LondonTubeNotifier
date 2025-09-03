@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using LondonTubeNotifier.Core.Configuration;
+using LondonTubeNotifier.Core.Domain.Entities;
 using LondonTubeNotifier.Core.DTOs.TflDtos;
 using LondonTubeNotifier.Core.Exceptions;
 using LondonTubeNotifier.Core.ServiceContracts;
@@ -13,29 +14,52 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
     public class TflApiService : ITflApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly TflSettings _tflSettings;
         private readonly ILogger<TflApiService> _logger;
+        private readonly string _mode;
+        private readonly string _apiKey;
         public TflApiService(HttpClient client, IOptions<TflSettings> options, ILogger<TflApiService> logger)
         {
             _httpClient = client;
-            _tflSettings = options.Value;
             _logger = logger;
+            _mode = options.Value.Modes;
+            _apiKey = options.Value.ApiKey;
         }
 
-        public async Task<List<LineStatusDto>?> GetLinesStatusAsync()
+        public async Task<Dictionary<string, List<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var uri = $"Line/Mode/{_tflSettings.Modes}/Status?app_key={_tflSettings.ApiKey}";
+                var uri = $"Line/Mode/{_mode}/Status?app_key={_apiKey}";
 
-                var response = await _httpClient.GetAsync(uri);
+                var response = await _httpClient.GetAsync(uri, cancellationToken);
 
-                response.EnsureSuccessStatusCode();
-
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync(cancellationToken);
+                    _logger.LogError("TfL API request failed with status code {StatusCode}. Content: {Content}", response.StatusCode, content);
+                    throw new TflApiException($"TfL API request failed with status code {response.StatusCode}.");
+                }
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var lines = await response.Content.ReadFromJsonAsync<List<LineStatusDto>>(options);
+                var tflLineDtos = await response.Content.ReadFromJsonAsync<List<TflLineDto>>(options, cancellationToken);
 
-                return lines;
+                if (tflLineDtos == null || !tflLineDtos.Any())
+                {
+                    _logger.LogWarning("TfL API response was empty or could not be deserialized.");
+                    return new Dictionary<string, List<LineStatus>>();
+                }
+
+                return tflLineDtos
+                    .Where(line => line.LineId != null && line.LineStatuses != null)
+                    .ToDictionary(
+                    line => line.LineId,
+                    line => line.LineStatuses.Select(ls => new LineStatus
+                    {
+                        LineId = line.LineId,
+                        StatusSeverity = ls.StatusSeverity,
+                        StatusDescription = ls.StatusSeverityDescription,
+                        Reason = ls.Reason,
+                    }).ToList()
+                    );
             }
             catch (JsonException ex)
             {
@@ -47,12 +71,6 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 _logger.LogError(ex, "TFL API request failed.");
                 throw new TflApiException("TfL API request failed", ex);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An unexpected error occurred while processing TFL API response.");
-                throw new TflApiException("Unexpected error while calling TfL API", ex);
-            }
-
         }
     }
 }

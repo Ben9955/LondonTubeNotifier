@@ -49,6 +49,10 @@ namespace LondonTubeNotifier.Infrastructure.Data
                 .HasOne(ls => ls.Line)
                 .WithMany(l => l.LineStatuses)
                 .HasForeignKey(ls => ls.LineId);
+
+            modelBuilder.Entity<LineStatus>()
+                .Property(ls => ls.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }
