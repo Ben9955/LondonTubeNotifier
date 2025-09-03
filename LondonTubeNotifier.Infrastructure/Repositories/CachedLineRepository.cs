@@ -34,10 +34,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         public async Task<List<Line>> GetLinesAsync()
         {
             return await _memoryCache.GetOrCreateAsync(CacheKey, async entry =>
-            {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24);
-                return await _innerRepository.GetLinesAsync();
-            }) ?? new List<Line>();
+            await _innerRepository.GetLinesAsync()) ?? new List<Line>();
         }
     }
 }

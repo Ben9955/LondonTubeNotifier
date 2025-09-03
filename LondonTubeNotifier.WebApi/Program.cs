@@ -48,6 +48,14 @@ builder.Services.AddScoped<ILineRepository>(sp =>
     )
 );
 
+builder.Services.AddScoped<LineStatusRepository>();
+builder.Services.AddScoped<ILineStatusRepository>(sp =>
+    new CachedLineStatusRepository(
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<LineStatusRepository>()
+    )
+);
+
 
 builder.Services.AddHostedService<TflLineStatusWorker>();
 
