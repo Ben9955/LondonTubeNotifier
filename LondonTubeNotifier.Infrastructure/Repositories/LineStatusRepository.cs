@@ -7,36 +7,39 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
 {
     public class LineStatusRepository : ILineStatusRepository
     {
-        private readonly  ApplicationDbContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
         public LineStatusRepository(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
-        public async Task<List<LineStatus>> GetLastStatusForLineAsync(string lineId)
+        public async Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId)
         {
-            return await _dbContext.LineStatuses
+            var statuses = await _dbContext.LineStatuses 
                 .Where(ls => ls.LineId == lineId)
-                .OrderByDescending(ls => ls.StatusSeverity)
                 .AsNoTracking()
                 .ToListAsync();
+
+            return new HashSet<LineStatus>(statuses);
         }
 
-        public async Task<Dictionary<string, List<LineStatus>>> GetLatestLineStatusesAsync()
+        public async Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync()
         {
             var statuses = await _dbContext.LineStatuses
                 .AsNoTracking()
                 .ToListAsync();
             return statuses.GroupBy(s => s.LineId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+                .ToDictionary(g => g.Key, g => g.ToHashSet());
         }
 
-        public async Task SaveStatusAsync(List<LineStatus> statuses)
+        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> dicStatuses)
         {
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
+                List<LineStatus> statuses = dicStatuses.SelectMany(s => s.Value).ToList();
+
                 _dbContext.LineStatuses.RemoveRange(_dbContext.LineStatuses);
                 await _dbContext.SaveChangesAsync();
 
@@ -49,7 +52,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw ;
+                throw;
             }
         }
     }

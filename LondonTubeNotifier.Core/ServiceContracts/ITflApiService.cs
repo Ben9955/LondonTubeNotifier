@@ -13,6 +13,6 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// <returns>A list of <see cref="LineStatus"/> representing the current status of all lines.</returns>
         /// <exception cref="TflApiException">Thrown if the TfL API request fails.</exception>
         /// <exception cref="JsonException">Thrown if the API response cannot be deserialized correctly.</exception>
-        Task<Dictionary<string, List<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken);
+        Task<Dictionary<string, HashSet<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken);
     }
 }

@@ -9,5 +9,18 @@
         public string StatusDescription { get; set; } = string.Empty;
         public string? Reason { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is LineStatus status &&
+                   StatusSeverity == status.StatusSeverity &&
+                   StatusDescription == status.StatusDescription &&
+                   Reason == status.Reason;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(StatusSeverity, StatusDescription, Reason);
+        }
     }
 }

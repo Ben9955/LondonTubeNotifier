@@ -14,7 +14,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
             _memoryCache = memoryCache;
             _innerRepository = innerRepository;
         }
-        public async Task<List<LineStatus>> GetLastStatusForLineAsync(string lineId)
+        public async Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId)
         {
             var statusesByLine = await GetLatestLineStatusesAsync();
 
@@ -23,23 +23,27 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
                 return lineStatuses;
             }
 
-            return new List<LineStatus>();
+            return new HashSet<LineStatus>();
         }
 
-        public async Task<Dictionary<string, List<LineStatus>>> GetLatestLineStatusesAsync()
+        public async Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync()
         {
             return await _memoryCache.GetOrCreateAsync(CacheKey, async entry =>
              {
                  entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
 
                  return await _innerRepository.GetLatestLineStatusesAsync();
-             }) ?? new Dictionary<string, List<LineStatus>>();
+             }) ?? new Dictionary<string, HashSet<LineStatus>>();
         }
 
-        public async Task SaveStatusAsync(List<LineStatus> statuses)
+        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> statuses)
         {
             await _innerRepository.SaveStatusAsync(statuses);
-            _memoryCache.Remove(CacheKey);
+
+            _memoryCache.Set(CacheKey, statuses, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            });
         }
     }
 }

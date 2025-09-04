@@ -29,11 +29,10 @@ namespace LondonTubeNotifier.Infrastructure.Workers
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 }
 
-                 List<LineStatusDto>? linesStatus = await _tflApi.GetLinesStatusAsync();
+                 List<TflLineDto>? linesStatus = await _tflApi.GetLinesStatusAsync();
 
                 linesStatus?.ForEach(l =>
                 {
-                    Console.WriteLine(l.Id);
                     l.LineStatuses.ForEach(s =>
                     {
 

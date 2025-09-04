@@ -39,8 +39,9 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                     _logger.LogError("TfL API request failed with status code {StatusCode}. Content: {Content}", response.StatusCode, content);
                     throw new TflApiException($"TfL API request failed with status code {response.StatusCode}.");
                 }
+
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var tflLineDtos = await response.Content.ReadFromJsonAsync<List<TflLineDto>>(options, cancellationToken);
+                var tflLineDtos = await response.Content.ReadFromJsonAsync<HashSet<TflLineDto>>(options, cancellationToken);
 
                 if (tflLineDtos == null || !tflLineDtos.Any())
                 {
