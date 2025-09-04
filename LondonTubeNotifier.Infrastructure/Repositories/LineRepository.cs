@@ -21,7 +21,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
 
         public async Task<Line?> GetLineByLineIdAsync(string lineId)
         {
-            return await _dbContext.Lines.FindAsync(lineId);
+            return await _dbContext.Lines.FirstOrDefaultAsync(l => l.Id == lineId);
         }
 
         public async Task AddSubscriptionAsync(IUser user, Line line)
