@@ -14,7 +14,7 @@ namespace LondonTubeNotifier.Core.Domain.RespositoryContracts
         /// A dictionary where the key is the line ID and the value is the set of statuses.
         /// Returns an empty dictionary if no statuses exist.
         /// </returns>
-        Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync();
+        Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the most recent statuses for a specific line.
@@ -23,7 +23,7 @@ namespace LondonTubeNotifier.Core.Domain.RespositoryContracts
         /// <returns>
         /// A set of statuses for the line. Returns an empty list if the line has no statuses.
         /// </returns>
-        Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId);
+        Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the latest line statuses. Replaces existing records in a transactional way.
@@ -32,6 +32,6 @@ namespace LondonTubeNotifier.Core.Domain.RespositoryContracts
         /// A dictionary keyed by line ID, where each value is the set of statuses for that line.
         /// </param>
         /// <exception cref="Exception">Throws if saving to the database fails.</exception>
-        Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> statuses);
+        Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> statuses, CancellationToken cancellationToken);
     }
 }

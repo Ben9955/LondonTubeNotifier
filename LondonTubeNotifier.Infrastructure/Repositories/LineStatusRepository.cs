@@ -12,41 +12,40 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId)
+        public async Task<HashSet<LineStatus>> GetLastStatusForLineAsync(string lineId, CancellationToken cancellationToken)
         {
             var statuses = await _dbContext.LineStatuses 
                 .Where(ls => ls.LineId == lineId)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return new HashSet<LineStatus>(statuses);
         }
 
-        public async Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync()
+        public async Task<Dictionary<string, HashSet<LineStatus>>> GetLatestLineStatusesAsync(CancellationToken cancellationToken)
         {
             var statuses = await _dbContext.LineStatuses
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             return statuses.GroupBy(s => s.LineId)
                 .ToDictionary(g => g.Key, g => g.ToHashSet());
         }
 
-        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> dicStatuses)
+        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> dicStatuses, CancellationToken cancellationToken)
         {
 
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
             try
             {
                 List<LineStatus> statuses = dicStatuses.SelectMany(s => s.Value).ToList();
 
                 _dbContext.LineStatuses.RemoveRange(_dbContext.LineStatuses);
-                await _dbContext.SaveChangesAsync();
 
-                await _dbContext.LineStatuses.AddRangeAsync(statuses);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.LineStatuses.AddRangeAsync(statuses, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(cancellationToken);
 
             }
             catch (Exception ex)

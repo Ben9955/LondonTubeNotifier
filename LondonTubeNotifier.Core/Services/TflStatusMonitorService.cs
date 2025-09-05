@@ -21,14 +21,12 @@ namespace LondonTubeNotifier.Core.Services
             var currentStatus = await _tflApiService.GetLinesStatusAsync(cancellationToken);
 
             // Old status from the database
-            var previousStatus = await _lineStatusRepository.GetLatestLineStatusesAsync();
+            var previousStatus = await _lineStatusRepository.GetLatestLineStatusesAsync(cancellationToken);
 
             if (DataHasChanged(currentStatus, previousStatus, out var changedLines))
             {
                 // Save new to DB
-                await _lineStatusRepository.SaveStatusAsync(currentStatus);
-
-
+                await _lineStatusRepository.SaveStatusAsync(currentStatus, cancellationToken);
             }
         }
 
