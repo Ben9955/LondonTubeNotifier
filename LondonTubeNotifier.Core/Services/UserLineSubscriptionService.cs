@@ -46,9 +46,9 @@ namespace LondonTubeNotifier.Core.Services
             await _lineRepository.DeleteSubscriptionAsync(user, line);
         }
 
-        public async Task<IEnumerable<LineDto>> GetUserSubscriptionsAsync(Guid userId)
+        public async Task<IEnumerable<LineDto>> GetUserSubscriptionsAsync(Guid userId, CancellationToken cancellationToken)
         {
-            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId)
+            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId, cancellationToken)
                 ?? throw new DomainNotFoundException("User not found");
 
             var linesDto = user.Subscriptions.Select(l => new LineDto

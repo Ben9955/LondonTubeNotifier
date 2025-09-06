@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using System.Net.Http;
 using LondonTubeNotifier.Infrastructure.Workers;
 using Microsoft.Extensions.Caching.Memory;
+using LondonTubeNotifier.WebApi.Hubs;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
 
@@ -150,6 +151,11 @@ builder.Services.AddSwaggerGen(options =>
     }); 
 });
 
+
+// SignalR
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IOnlineUsersTracker, OnlineUsersTracker>();
+
 var app = builder.Build();
 
 app.UseHttpLogging();
@@ -165,6 +171,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<TflLiveHub>("/TflLiveHub");
 
 app.MapControllers();
 

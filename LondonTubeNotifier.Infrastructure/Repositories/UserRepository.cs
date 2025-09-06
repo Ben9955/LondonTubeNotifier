@@ -22,11 +22,11 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IUser?> GetUserWithSubscriptionsAsync(Guid id)
+        public async Task<IUser?> GetUserWithSubscriptionsAsync(Guid id, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
                 .Include(u => u.Subscriptions)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
             return user;
         }

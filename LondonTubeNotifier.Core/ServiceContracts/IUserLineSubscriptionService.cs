@@ -31,6 +31,6 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// <param name="userId">The unique identifier for the user.</param>
         /// <returns>A task that returns a collection of <see cref="LineDto"/> representing the user's subscriptions.</returns>
         /// <exception cref="DomainNotFoundException">Thrown when user with specified Id does not exist</exception>
-        Task<IEnumerable<LineDto>> GetUserSubscriptionsAsync(Guid userId);
+        Task<IEnumerable<LineDto>> GetUserSubscriptionsAsync(Guid userId, CancellationToken cancellationToken);
     }
 }
