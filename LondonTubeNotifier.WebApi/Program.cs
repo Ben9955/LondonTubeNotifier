@@ -20,6 +20,9 @@ using System.Net.Http;
 using LondonTubeNotifier.Infrastructure.Workers;
 using Microsoft.Extensions.Caching.Memory;
 using LondonTubeNotifier.WebApi.Hubs;
+using RazorLight;
+using LondonTubeNotifier.Infrastructure.;
+using LondonTubeNotifier.Infrastructure.Services;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
 
@@ -71,6 +74,8 @@ builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<TflSettings>(
     builder.Configuration.GetSection("Tfl"));
+builder.Services.Configure<SendGridSettings>(
+    builder.Configuration.GetSection("SendGrid"));
 
 
 builder.Logging.ClearProviders().AddConsole();
@@ -155,6 +160,16 @@ builder.Services.AddSwaggerGen(options =>
 // SignalR
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IOnlineUsersTracker, OnlineUsersTracker>();
+
+// razor for email template
+var razorEngine = new RazorLightEngineBuilder()
+    .UseEmbeddedResourcesProject(typeof(EmailTemplateService))
+    .UseMemoryCachingProvider()
+    .Build();
+builder.Services.AddSingleton<IRazorLightEngine>(razorEngine);
+
+builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
+
 
 var app = builder.Build();
 

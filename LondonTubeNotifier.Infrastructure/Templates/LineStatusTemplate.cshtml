@@ -1,0 +1,102 @@
+﻿@model LondonTubeNotifier.Core.DTOs.EmailContentDto
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Status Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #0019A8;
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 20px 30px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        .good-service {
+            background-color: #00843D;
+        }
+        .minor-delays {
+            background-color: #FFD400;
+        }
+        .severe-delays {
+            background-color: #E21835;
+        }
+        .line-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #000000;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777777;
+        }
+        .footer a {
+            color: #0019A8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <div class="header">
+            <h1>London Tube Status</h1>
+        </div>
+
+        <div class="content">
+            <p>Hello **@Model.RecipientName**,</p>
+            <p>We're sending you an update for the **@Model.LineName** line:</p>
+
+            <h3 class="line-name">@Model.LineName</h3>
+            <span class="status-badge @Model.StatusCssClass">@Model.NewStatus</span>
+            <p>@Model.NewStatusDescription</p>
+            <p>This information is real-time as of now. For the latest status, please check our app or website.</p>
+        </div>
+
+        <div class="footer">
+            <p>
+                You received this email because you subscribed to updates from the London Tube Notifier. <br>
+                If you no longer wish to receive these emails, you can <a href="#">unsubscribe here</a>.
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>
