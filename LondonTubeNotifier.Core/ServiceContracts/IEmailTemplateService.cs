@@ -5,7 +5,7 @@ namespace LondonTubeNotifier.Core.ServiceContracts
     public interface IEmailTemplateService
     {
         Task<string> RenderAsync<T>(string templateName, T model);
-        string GeneratePlainText(EmailContentDto content);
+        string GeneratePlainText(NotificationDto dto);
 
     }
 }

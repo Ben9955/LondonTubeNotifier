@@ -41,17 +41,18 @@ namespace LondonTubeNotifier.Infrastructure.Services
 
             _client = new SendGridClient(SGoptions);
         }
-        public async Task SendEmailAsync(EmailRecipientDto to, EmailContentDto content, string subject)
+        public async Task SendEmailAsync(NotificationDto notificationDto, CancellationToken cancellationToken)
         {
-            var renderedHtml = await _emailTemplateService.RenderAsync("~/Templates/LineStatusTemplate.cshtml", content);
-            var plainText = _emailTemplateService.GeneratePlainText(content);
+            var renderedHtml = await _emailTemplateService.RenderAsync("~/Templates/LineStatusTemplate.cshtml", notificationDto);
+            var plainText = _emailTemplateService.GeneratePlainText(notificationDto);
 
             var fromAddress = new EmailAddress(_sendGridSettings.FromEmail, _sendGridSettings.FromName);
-            var toAddress = new EmailAddress(to.Email, to.Name);
+            var toAddress = new EmailAddress(notificationDto.RecipientEmail, notificationDto.RecipientName);
+            var subject = GenerateSubject(notificationDto);
 
             var msg = MailHelper.CreateSingleEmail(fromAddress, toAddress, subject, plainText, renderedHtml);
 
-            var response = await _client.SendEmailAsync(msg);
+            var response = await _client.SendEmailAsync(msg, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -59,6 +60,14 @@ namespace LondonTubeNotifier.Infrastructure.Services
                 var responseBody = await response.Body.ReadAsStringAsync();
                 throw new Exception($"Failed to send email. Status Code: {response.StatusCode}. Response Body: {responseBody}");
             }
+        }
+
+        private string GenerateSubject(NotificationDto dto)
+        {
+            var mainStatus = dto.LineUpdates.StatusDescriptions
+                                .OrderByDescending(s => s.StatusSeverity)
+                                .FirstOrDefault()?.StatusDescription;
+            return $"Tube Update: {dto.LineUpdates.LineName} - {mainStatus}";
         }
 
     }

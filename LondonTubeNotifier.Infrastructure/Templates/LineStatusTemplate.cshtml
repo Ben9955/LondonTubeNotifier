@@ -1,4 +1,4 @@
-﻿@model LondonTubeNotifier.Core.DTOs.EmailContentDto
+﻿@model LondonTubeNotifier.Core.DTOs.NotificationDto
 
 <!DOCTYPE html>
 <html>
@@ -80,23 +80,46 @@
             <h1>London Tube Status</h1>
         </div>
 
-        <div class="content">
-            <p>Hello **@Model.RecipientName**,</p>
-            <p>We're sending you an update for the **@Model.LineName** line:</p>
+		<div class="content">
+			<p>Hello @Model.RecipientName,</p>
 
-            <h3 class="line-name">@Model.LineName</h3>
-            <span class="status-badge @Model.StatusCssClass">@Model.NewStatus</span>
-            <p>@Model.NewStatusDescription</p>
-            <p>This information is real-time as of now. For the latest status, please check our app or website.</p>
-        </div>
+			<h3 class="line-name">The status of the @Model.LineUpdates.LineName line has changed:</h3>
 
-        <div class="footer">
-            <p>
-                You received this email because you subscribed to updates from the London Tube Notifier. <br>
-                If you no longer wish to receive these emails, you can <a href="#">unsubscribe here</a>.
-            </p>
-        </div>
-    </div>
+			@{
+				var reasons = Model.LineUpdates.StatusDescriptions.Where(s => !string.IsNullOrEmpty(s.Reason)).Select(s => s.Reason);
+			}
+
+			@if (reasons.Any())
+			{
+				<p>
+					<ul>
+						@foreach (var reason in reasons)
+						{
+							<li>@reason</li>
+						}
+					</ul>
+				</p>
+			}
+			else
+			{
+				<p>
+					New Status:
+					@foreach (var status in Model.LineUpdates.StatusDescriptions)
+					{
+						<span class="status-badge @status.StatusCssClass">@status.StatusDescription</span>
+					}
+				</p>
+			}
+
+		</div>
+
+		<div class="footer">
+			<p>
+				You received this email because you subscribed to updates from the London Tube Notifier. <br>
+				If you no longer wish to receive these emails, you can <a href="#">unsubscribe here</a>.
+			</p>
+		</div>
+	</div>
 
 </body>
 </html>

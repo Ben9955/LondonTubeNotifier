@@ -16,12 +16,10 @@ using LondonTubeNotifier.Infrastructure.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using LondonTubeNotifier.Infrastructure.ExternalAPIs;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
 using LondonTubeNotifier.Infrastructure.Workers;
 using Microsoft.Extensions.Caching.Memory;
 using LondonTubeNotifier.WebApi.Hubs;
 using RazorLight;
-using LondonTubeNotifier.Infrastructure.;
 using LondonTubeNotifier.Infrastructure.Services;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
@@ -77,6 +75,7 @@ builder.Services.Configure<TflSettings>(
 builder.Services.Configure<SendGridSettings>(
     builder.Configuration.GetSection("SendGrid"));
 
+builder.Services.AddSingleton<INotificationService, NotificationService>();
 
 builder.Logging.ClearProviders().AddConsole();
 if (builder.Environment.IsDevelopment())
@@ -160,6 +159,7 @@ builder.Services.AddSwaggerGen(options =>
 // SignalR
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IOnlineUsersTracker, OnlineUsersTracker>();
+builder.Services.AddSingleton<IRealtimeNotifier, SignalRRealtimeNotifier>();    
 
 // razor for email template
 var razorEngine = new RazorLightEngineBuilder()

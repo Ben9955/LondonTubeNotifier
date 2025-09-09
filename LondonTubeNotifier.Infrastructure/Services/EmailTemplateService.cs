@@ -1,6 +1,7 @@
 ﻿using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Core.ServiceContracts;
 using RazorLight;
+using System.Text;
 
 namespace LondonTubeNotifier.Infrastructure.Services
 {
@@ -18,15 +19,32 @@ namespace LondonTubeNotifier.Infrastructure.Services
             return await _engine.CompileRenderAsync(templateName, model);
         }
 
-        public string GeneratePlainText(EmailContentDto content)
+        public string GeneratePlainText(NotificationDto dto)
         {
-            return $@"London Tube Status Update
-Hello {content.RecipientName},
+            var content = new StringBuilder();
 
-The status of the {content.LineName} line has changed to:
-{content.NewStatus}
+            content.AppendLine($"London Tube Status Update");
+            content.AppendLine($"Hello {dto.RecipientName},");
+            content.AppendLine();
+            content.AppendLine($"The status of the {dto.LineUpdates.LineName} line has changed:");
 
-For more details, please visit our website.";
+            var reasons = dto.LineUpdates.StatusDescriptions
+                .Where(s => !string.IsNullOrEmpty(s.Reason))
+                .Select(s => s.Reason);
+
+            if (reasons.Any())
+            {
+                content.AppendLine($"- {string.Join(Environment.NewLine + "- ", reasons)}");
+            }
+            else
+            {
+                content.AppendLine($"- New Status: {string.Join(", ", dto.LineUpdates.StatusDescriptions.Select(s => s.StatusDescription))}");
+            }
+            content.AppendLine();
+
+            content.AppendLine("For more details, please visit our website.");
+
+            return content.ToString();
         }
     }
 }

@@ -3,7 +3,7 @@ using LondonTubeNotifier.Core.ServiceContracts;
 
 namespace LondonTubeNotifier.Core.Services
 {
-    public class OnlineUsersTracker : IOnlineUsersTracker
+    public class OnlineUsersTracker : IOnlineUsersTracker, IUserOnlineChecker
     {
         // The outer dictionary's key is the userId.
         // The inner dictionary's key is the connectionId, and the byte is a memory-efficient placeholder value.

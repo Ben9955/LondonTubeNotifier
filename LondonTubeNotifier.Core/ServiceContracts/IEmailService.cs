@@ -4,6 +4,6 @@ namespace LondonTubeNotifier.Core.ServiceContracts
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(EmailRecipientDto to, EmailContentDto content, string subject);
+        Task SendEmailAsync(NotificationDto notificationDto, CancellationToken cancellationToken);
     }
 }
