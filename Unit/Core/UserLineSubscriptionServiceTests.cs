@@ -7,16 +7,16 @@ using LondonTubeNotifier.Core.Services;
 using LondonTubeNotifier.Infrastructure.Entities;
 using Moq;
 
-namespace UnitTests
+namespace UnitTests.Core
 {
-    public class UserLineSubscriptionServiceTest
+    public class UserLineSubscriptionServiceTests
     {
         private readonly Mock<ILineRepository> _lineRepository;
         private readonly Mock<IUserRepository> _userRepository;
         private readonly Fixture _fixture;
         private readonly UserLineSubscriptionService _service;
 
-        public UserLineSubscriptionServiceTest()
+        public UserLineSubscriptionServiceTests()
         {
             _lineRepository = new Mock<ILineRepository>();
             _userRepository = new Mock<IUserRepository>();

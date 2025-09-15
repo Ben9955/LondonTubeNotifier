@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace UnitTests
+namespace UnitTests.Core
 {
-    public class LinesControllerTest
+    public class LinesControllerTests
     {
         private readonly Mock<ILineService> _lineService;
         private readonly Fixture _fixture;
         private readonly LinesController _linesController;
         private readonly Mock<ILogger<LinesController>> _logger;
 
-        public LinesControllerTest()
+        public LinesControllerTests()
         {
             _lineService = new Mock<ILineService>();
             _fixture = new Fixture();
@@ -27,7 +27,7 @@ namespace UnitTests
 
         [Fact]
         public async Task GetLines_ShouldReturnOkWithList_WhenServiceReturnsLines()
-        { 
+        {
             //Arrange
             var lines = _fixture.CreateMany<LineDto>(3).ToList();
             _lineService.Setup(l => l.GetLinesAsync()).ReturnsAsync(lines);

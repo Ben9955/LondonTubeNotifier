@@ -10,9 +10,9 @@ using LondonTubeNotifier.Core.Domain.Entities;
 using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Core.Exceptions;
 
-namespace UnitTests
+namespace UnitTests.Core
 {
-    public class LineServiceTest
+    public class LineServiceTests
     {
         private readonly Mock<ILineRepository> _lineRepository;
         private readonly Mock<ILineMapper> _lineMapper;
@@ -20,7 +20,7 @@ namespace UnitTests
         private readonly Fixture _fixture;
         private readonly ILineService _lineService;
 
-        public LineServiceTest()
+        public LineServiceTests()
         {
             _fixture = new Fixture();
             _fixture.Behaviors
@@ -54,7 +54,7 @@ namespace UnitTests
             _lineMapper.Setup(m => m.ToDtoList(lines)).Returns(linesDtos);
 
             // Act
-           var result = await _lineService.GetLinesAsync();
+            var result = await _lineService.GetLinesAsync();
 
             //Assert
             result.Should().NotBeNull();

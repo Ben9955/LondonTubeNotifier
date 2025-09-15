@@ -1,4 +1,4 @@
-﻿namespace LondonTubeNotifier.Core.DTOs.TflDtos
+﻿namespace LondonTubeNotifier.Infrastructure.Dtos
 {
     public class TflStatusDto
     {

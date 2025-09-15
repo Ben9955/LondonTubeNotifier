@@ -1,5 +1,4 @@
 ﻿using AutoFixture;
-using FluentAssertions;
 using LondonTubeNotifier.Core.Domain.Entities;
 using LondonTubeNotifier.Core.Domain.RespositoryContracts;
 using LondonTubeNotifier.Core.DTOs;
@@ -8,9 +7,9 @@ using LondonTubeNotifier.Core.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace UnitTests
+namespace UnitTests.Core
 {
-    public class TflStatusMonitorServiceTest
+    public class TflStatusMonitorServiceTests
     {
         private readonly Mock<ITflApiService> _tflApiService;
         private readonly Mock<ILineStatusRepository> _lineStatusRepository;
@@ -20,7 +19,7 @@ namespace UnitTests
         private readonly Fixture _fixture;
         private readonly TflStatusMonitorService _service;
 
-        public TflStatusMonitorServiceTest()
+        public TflStatusMonitorServiceTests()
         {
             _tflApiService = new Mock<ITflApiService>();
             _lineStatusRepository = new Mock<ILineStatusRepository>();

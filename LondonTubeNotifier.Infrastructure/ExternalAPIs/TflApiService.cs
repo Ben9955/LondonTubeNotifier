@@ -2,7 +2,7 @@
 using System.Text.Json;
 using LondonTubeNotifier.Core.Configuration;
 using LondonTubeNotifier.Core.Domain.Entities;
-using LondonTubeNotifier.Core.DTOs.TflDtos;
+using LondonTubeNotifier.Infrastructure.Dtos;
 using LondonTubeNotifier.Core.Exceptions;
 using LondonTubeNotifier.Core.ServiceContracts;
 using Microsoft.Extensions.Logging;
@@ -72,11 +72,6 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 _logger.LogError(ex, "TFL API request failed.");
                 throw new TflApiException("TfL API request failed", ex);
             }
-        }
-
-        Task<Dictionary<string, HashSet<LineStatus>>> ITflApiService.GetLinesStatusAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }
