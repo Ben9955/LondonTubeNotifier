@@ -6,7 +6,6 @@ using LondonTubeNotifier.Core.Services;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 
 namespace UnitTests
 {

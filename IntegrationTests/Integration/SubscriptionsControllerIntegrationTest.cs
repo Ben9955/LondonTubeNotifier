@@ -7,6 +7,7 @@ using IntegrationTests.Helpers;
 using LondonTubeNotifier.Infrastructure.Data;
 using LondonTubeNotifier.Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IntegrationTests.Integration
 {
@@ -41,8 +42,22 @@ namespace IntegrationTests.Integration
             await Utilities.ResetUsersAsync(db, userManager);
         }
 
+        private void ResetCache()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+            cache.Remove("LinesCache");
+        }
+
+        private async Task ResetAllAsync()
+        {
+            await ResetLinesAsync();
+            await ResetUsersAsync();
+            ResetCache(); 
+        }
+
         private void Authenticate() =>
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("TestScheme", "anything");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("TestScheme", "11111111-1111-1111-1111-111111111111");
 
         #region SubscribeToLine
 
@@ -61,15 +76,29 @@ namespace IntegrationTests.Integration
         [Fact]
         public async Task SubscribeToLine_ShouldReturn400_WhenAlreadySubscribed()
         {
-            await ResetLinesAsync();
-            await ResetUsersAsync();
+            //await ResetLinesAsync();
+            //await ResetUsersAsync();
+
+            await ResetAllAsync();
             Authenticate();
 
-            (await _httpClient.PostAsync("/api/subscriptions/line/central", null))
-                .StatusCode.Should().Be(HttpStatusCode.NoContent);
+            // First subscription should succeed
+            var firstResponse = await _httpClient.PostAsync("/api/subscriptions/line/central", null);
+            var content1 = await firstResponse.Content.ReadAsStringAsync();
+            firstResponse.StatusCode.Should().Be(HttpStatusCode.NoContent,
+                because: $"Expected 400 BadRequest, but got {firstResponse.StatusCode}. Response content: {content1}"
+                );
 
-            (await _httpClient.PostAsync("/api/subscriptions/line/central", null))
-                .StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            // Second subscription should fail (already subscribed)
+            var secondResponse = await _httpClient.PostAsync("/api/subscriptions/line/central", null);
+
+            // Read content
+            var content = await secondResponse.Content.ReadAsStringAsync();
+
+            // Assert and include the response content in the failure message
+            secondResponse.StatusCode.Should().Be(
+                HttpStatusCode.BadRequest,
+                because: $"Expected 400 BadRequest, but got {secondResponse.StatusCode}. Response content: {content}");
         }
 
         [Fact]

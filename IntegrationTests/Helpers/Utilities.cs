@@ -3,6 +3,7 @@ using LondonTubeNotifier.Infrastructure.Data;
 using LondonTubeNotifier.Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace IntegrationTests.Helpers
 {
@@ -10,7 +11,8 @@ namespace IntegrationTests.Helpers
     {
         public static async Task ResetLinesAsync(ApplicationDbContext db, bool emptyTable = false)
         {
-            db.Lines.RemoveRange(db.Lines);
+            var lines = await db.Lines.ToListAsync();
+            db.Lines.RemoveRange(lines);
 
             if (!emptyTable)
             {

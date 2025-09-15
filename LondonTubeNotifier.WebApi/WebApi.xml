@@ -99,5 +99,19 @@
             <response code="401">User not authenticated.</response>
             <remarks>Shows current subscriptions for the logged-in user.</remarks>
         </member>
+        <member name="M:LondonTubeNotifier.WebApi.Hubs.TflLiveHub.JoinGroup(System.String)">
+            <summary>
+            Allows a client to join a specific SignalR group.
+            This is used by the client-side code when navigating to a page that requires real-time updates.
+            </summary>
+            <param name="groupName">The name of the group to join (e.g., "homepage-group").</param>
+        </member>
+        <member name="M:LondonTubeNotifier.WebApi.Hubs.TflLiveHub.LeaveGroup(System.String)">
+            <summary>
+            Allows a client to leave a specific SignalR group.
+            This is used by the client-side code when navigating away from a page.
+            </summary>
+            <param name="groupName">The name of the group to leave.</param>
+        </member>
     </members>
 </doc>

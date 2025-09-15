@@ -13,8 +13,10 @@ namespace LondonTubeNotifier.Core.Mappers
                 Id = line.Id,
                 Code = line.Code,
                 Name = line.Name,
-                Color = line.Color
-            };
+                Color = line.Color,
+                ModeName = line.ModeName,
+
+    };
         }
 
         public List<LineDto> ToDtoList(IEnumerable<Line> lines)

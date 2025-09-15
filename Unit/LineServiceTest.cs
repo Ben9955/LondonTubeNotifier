@@ -23,6 +23,12 @@ namespace UnitTests
         public LineServiceTest()
         {
             _fixture = new Fixture();
+            _fixture.Behaviors
+                .OfType<ThrowingRecursionBehavior>()
+                .ToList()
+                .ForEach(b => _fixture.Behaviors.Remove(b));
+
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             _lineMapper = new Mock<ILineMapper>();
             _lineRepository = new Mock<ILineRepository>();
             _logger = new Mock<ILogger<LineService>>();

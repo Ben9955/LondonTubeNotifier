@@ -24,7 +24,7 @@ namespace IntegrationTests.Factory
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
                 options.UseInMemoryDatabase("DatabaseForTesting");
-            });
+                });
 
                 // Remove real JwtService if registered
                 var jwtDescriptor = services.SingleOrDefault(
@@ -47,6 +47,15 @@ namespace IntegrationTests.Factory
                     options.DefaultChallengeScheme = "TestScheme";
                 })
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("TestScheme", options => { });
+
+
+                // Remove real EmailService
+                var emailDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
+                if (emailDescriptor != null)
+                    services.Remove(emailDescriptor);
+
+                // Add fake EmailService
+                services.AddScoped<IEmailService, FakeEmailService>();
             });
         }
     }

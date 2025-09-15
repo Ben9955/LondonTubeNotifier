@@ -5,6 +5,7 @@ using IntegrationTests.Factory;
 using IntegrationTests.Helpers;
 using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Infrastructure.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests.Integration
@@ -20,11 +21,14 @@ namespace IntegrationTests.Integration
             _client = factory.CreateClient();
         }
 
-        private async Task ResetLinesAsync(bool emptyTable = false)
+        private async Task ResetAllAsync(bool emptyLinesTable = false)
         {
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await Utilities.ResetLinesAsync(db, emptyTable);
+            await Utilities.ResetLinesAsync(db, emptyLinesTable);
+
+            var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+            cache.Remove("LinesCache");
         }
 
         #region GetLines
@@ -33,7 +37,7 @@ namespace IntegrationTests.Integration
         public async Task GetLines_ShouldReturn200_AndList()
         {
             var fakeLines = Utilities.GetSeedingLines();
-            await ResetLinesAsync();
+            await ResetAllAsync();
 
             var response = await _client.GetAsync("/api/lines");
             var lines = await response.Content.ReadFromJsonAsync<List<LineDto>>();
@@ -48,7 +52,7 @@ namespace IntegrationTests.Integration
         [Fact]
         public async Task GetLines_ShouldReturn200_AndEmptyList()
         {
-            await ResetLinesAsync(true);
+            await ResetAllAsync(true);
 
             var response = await _client.GetAsync("/api/lines");
             var lines = await response.Content.ReadFromJsonAsync<List<LineDto>>();
@@ -68,7 +72,7 @@ namespace IntegrationTests.Integration
         public async Task GetLineById_ShouldReturn200_AndLine(string lineId)
         {
             var fakeLines = Utilities.GetSeedingLines();
-            await ResetLinesAsync();
+            await ResetAllAsync();
 
             var response = await _client.GetAsync($"/api/lines/{lineId}");
             var line = await response.Content.ReadFromJsonAsync<LineDto>();
@@ -82,7 +86,7 @@ namespace IntegrationTests.Integration
         public async Task GetLineById_ShouldReturn404_AndProblemDetail()
         {
             string invalidId = "InvalidId";
-            await ResetLinesAsync();
+            await ResetAllAsync();
 
             var response = await _client.GetAsync($"/api/lines/{invalidId}");
             var problem = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();

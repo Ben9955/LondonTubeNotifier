@@ -20,7 +20,7 @@ namespace LondonTubeNotifier.Core.Services
         public async Task SubscribeAsync(Guid userId, string lineId)
         {
 
-            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId)
+            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId, CancellationToken.None)
                 ?? throw new DomainNotFoundException("Usernot found");
 
             Line line = await _lineRepository.GetLineByLineIdAsync(lineId)
@@ -34,7 +34,7 @@ namespace LondonTubeNotifier.Core.Services
 
         public async Task UnsubscribeAsync(Guid userId, string lineId)
         {
-            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId)
+            IUser user = await _userRepository.GetUserWithSubscriptionsAsync(userId, CancellationToken.None)
                 ?? throw new DomainNotFoundException("User not found");
 
             Line line = await _lineRepository.GetLineByLineIdAsync(lineId)

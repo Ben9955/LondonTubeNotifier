@@ -5,8 +5,6 @@ namespace LondonTubeNotifier.Core.Services
 {
     public class OnlineUsersTracker : IOnlineUsersTracker, IUserOnlineChecker
     {
-        // The outer dictionary's key is the userId.
-        // The inner dictionary's key is the connectionId, and the byte is a memory-efficient placeholder value.
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _onlineUsers = new();
         public void AddUser(string userId, string connectionId)
         {

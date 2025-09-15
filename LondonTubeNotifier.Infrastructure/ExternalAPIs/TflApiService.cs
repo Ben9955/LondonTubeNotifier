@@ -25,7 +25,7 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
             _apiKey = options.Value.ApiKey;
         }
 
-        public async Task<Dictionary<string, List<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken)
+        public async Task<Dictionary<string, HashSet<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 if (tflLineDtos == null || !tflLineDtos.Any())
                 {
                     _logger.LogWarning("TfL API response was empty or could not be deserialized.");
-                    return new Dictionary<string, List<LineStatus>>();
+                    return new Dictionary<string, HashSet<LineStatus>>();
                 }
 
                 return tflLineDtos
@@ -59,7 +59,7 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                         StatusSeverity = ls.StatusSeverity,
                         StatusDescription = ls.StatusSeverityDescription,
                         Reason = ls.Reason,
-                    }).ToList()
+                    }).ToHashSet()
                     );
             }
             catch (JsonException ex)
@@ -72,6 +72,11 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 _logger.LogError(ex, "TFL API request failed.");
                 throw new TflApiException("TfL API request failed", ex);
             }
+        }
+
+        Task<Dictionary<string, HashSet<LineStatus>>> ITflApiService.GetLinesStatusAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

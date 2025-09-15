@@ -75,7 +75,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
         {
             _logger.LogInformation("GetLinesForUser endpoint called");
             var userId = GetUserIdFromClaims();
-            var lines = await _subscriptionService.GetUserSubscriptionsAsync(userId);
+            var lines = await _subscriptionService.GetUserSubscriptionsAsync(userId, CancellationToken.None);
             return Ok(lines);
         }
 

@@ -1,5 +1,6 @@
 using LondonTubeNotifier.Core.Configuration;
 using LondonTubeNotifier.Core.ServiceContracts;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,12 +11,15 @@ namespace LondonTubeNotifier.Infrastructure.Workers
     public class TflLineStatusWorker : BackgroundService
     {
         private readonly ILogger<TflLineStatusWorker> _logger;
-        private readonly ITflStatusMonitorService _monitorService;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly int _pollingIntervalSeconds;
-        public TflLineStatusWorker(ILogger<TflLineStatusWorker> logger, ITflStatusMonitorService monitorService, IOptions<TflSettings> options)
+        public TflLineStatusWorker(
+            ILogger<TflLineStatusWorker> logger, 
+            IServiceScopeFactory scopeFactory,
+            IOptions<TflSettings> options)
         {
             _logger = logger;
-            _monitorService = monitorService;
+            _scopeFactory = scopeFactory;
             _pollingIntervalSeconds = options.Value.PollingIntervalSeconds;
         }
 
@@ -25,11 +29,14 @@ namespace LondonTubeNotifier.Infrastructure.Workers
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                using var scope = _scopeFactory.CreateScope();
+                var monitorService = scope.ServiceProvider.GetRequiredService<ITflStatusMonitorService>();
+
                 try
                 {
                     _logger.LogDebug("Worker running at: {time}", DateTimeOffset.Now);
 
-                    await _monitorService.CheckForUpdatesAndNotifyAsync(stoppingToken);
+                    await monitorService.CheckForUpdatesAndNotifyAsync(stoppingToken);
 
                 }
                 catch (TaskCanceledException)

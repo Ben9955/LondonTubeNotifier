@@ -47,38 +47,20 @@ namespace LondonTubeNotifier.Core.Services
                     .GroupBy(us => us.LineId)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
-                foreach (var lineStatuses in changedLines)
+                foreach (var changedLineGroup in changedLines)
                 {
-                    if (usersByLineId.TryGetValue(lineStatuses.Key, out var recipients))
+                    if (usersByLineId.TryGetValue(changedLineGroup.Key, out var recipients))
                     {
-                        List<StatusesDto> statusesDto = lineStatuses.Value.Select(ls =>
-                        new StatusesDto
-                        {
-                            StatusDescription = ls.StatusDescription,
-                            Reason = ls.Reason,
-                            StatusSeverity = ls.StatusSeverity,
-                            StatusCssClass = GetCssClassForStatus(ls.StatusSeverity)
-                        }).ToList();
 
-                        var lineStatusesDto = new LineStatusesDto
-                        {
-                            LineName = Capitalize(lineStatuses.Key),
-                            LineId = lineStatuses.Key,
-                            StatusDescriptions = statusesDto
-                        };
-                        
+                        var lineStatusesDto = CreateLineStatusesDto(changedLineGroup);
+
+
                         _logger.LogInformation("Sending notifications for {LineName} to {UserCount} users",
                             lineStatusesDto.LineName, recipients.Count);
 
                         foreach (var recipient in recipients)
                         {
-                            NotificationDto notificationDto = new NotificationDto
-                            {
-                                RecipientEmail = recipient.Email,
-                                RecipientName = recipient.FullName,
-                                RecipientId = recipient.UserId,
-                                LineUpdates = lineStatusesDto
-                            };
+                            var notificationDto = CreateNotificationDto(recipient, lineStatusesDto);
 
                             // If the user is online will send a notification via webscoket otherwise email
                             await _notificationService.NotifyLineSubscribersAsync(notificationDto, cancellationToken);
@@ -115,6 +97,36 @@ namespace LondonTubeNotifier.Core.Services
                 }
             }
             return changedLines.Count > 0;
+        }
+
+
+        private LineStatusesDto CreateLineStatusesDto(KeyValuePair<string, List<LineStatus>> lineStatuses)
+        {
+            var statusesDto = lineStatuses.Value.Select(ls => new StatusesDto
+            {
+                StatusDescription = ls.StatusDescription,
+                Reason = ls.Reason,
+                StatusSeverity = ls.StatusSeverity,
+                StatusCssClass = GetCssClassForStatus(ls.StatusSeverity)
+            }).ToList();
+
+            return new LineStatusesDto
+            {
+                LineName = Capitalize(lineStatuses.Key),
+                LineId = lineStatuses.Key,
+                StatusDescriptions = statusesDto
+            };
+        }
+
+        private NotificationDto CreateNotificationDto(UserSubscriptionDto recipient, LineStatusesDto lineStatusesDto)
+        {
+            return new NotificationDto
+            {
+                RecipientEmail = recipient.Email,
+                RecipientName = recipient.FullName,
+                RecipientId = recipient.UserId, 
+                LineUpdates = lineStatusesDto
+            };
         }
 
         private string Capitalize(string input)

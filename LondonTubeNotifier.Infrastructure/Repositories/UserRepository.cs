@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LondonTubeNotifier.Core.Domain.Entities;
-using LondonTubeNotifier.Core.Domain.Interfaces;
+﻿using LondonTubeNotifier.Core.Domain.Interfaces;
 using LondonTubeNotifier.Core.Domain.RespositoryContracts;
 using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Infrastructure.Data;
-using LondonTubeNotifier.Infrastructure.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LondonTubeNotifier.Infrastructure.Repositories
