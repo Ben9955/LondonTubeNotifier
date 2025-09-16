@@ -38,10 +38,6 @@ namespace LondonTubeNotifier.Core.Services
                 await _emailService.SendEmailAsync(notificationDto, cancellationToken);
             }
 
-
-            //_logger.LogInformation("Notifications for {LineName} have been sent to {UserCount} users",
-            //    lineStatusesDto.LineName, users.Count);
-
             _logger.LogDebug("Notification for {LineName} to {UserName} has been sent",
                 notificationDto.LineUpdates.LineName, notificationDto.RecipientName);
         }

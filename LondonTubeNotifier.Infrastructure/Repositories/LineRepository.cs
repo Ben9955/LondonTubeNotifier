@@ -2,8 +2,6 @@
 using LondonTubeNotifier.Core.Domain.Interfaces;
 using LondonTubeNotifier.Core.Domain.RespositoryContracts;
 using LondonTubeNotifier.Infrastructure.Data;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace LondonTubeNotifier.Infrastructure.Repositories

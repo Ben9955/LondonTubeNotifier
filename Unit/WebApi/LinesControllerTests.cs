@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace UnitTests.Core
+namespace UnitTests.WebApi
 {
     public class LinesControllerTests
     {

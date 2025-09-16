@@ -52,12 +52,14 @@ namespace LondonTubeNotifier.Infrastructure.Services
 
             var msg = MailHelper.CreateSingleEmail(fromAddress, toAddress, subject, plainText, renderedHtml);
 
-            var response = await _client.SendEmailAsync(msg, cancellationToken);
+            var response = await SendEmailInternalAsync(msg, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError($"Failed to send email.Status Code: {response.StatusCode}");
-                var responseBody = await response.Body.ReadAsStringAsync();
+                var responseBody = response.Body != null
+                    ? await response.Body.ReadAsStringAsync()
+                    : string.Empty;
                 throw new Exception($"Failed to send email. Status Code: {response.StatusCode}. Response Body: {responseBody}");
             }
         }
@@ -69,6 +71,12 @@ namespace LondonTubeNotifier.Infrastructure.Services
                                 .FirstOrDefault()?.StatusDescription;
             return $"Tube Update: {dto.LineUpdates.LineName} - {mainStatus}";
         }
+
+        protected virtual Task<Response> SendEmailInternalAsync(SendGridMessage msg, CancellationToken cancellationToken)
+        {
+            return _client.SendEmailAsync(msg, cancellationToken);
+        }
+
 
     }
 }
