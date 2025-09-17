@@ -1,4 +1,5 @@
-﻿using LondonTubeNotifier.Core.DTOs;
+﻿using System.Security.Claims;
+using LondonTubeNotifier.Core.DTOs;
 
 namespace LondonTubeNotifier.Core.ServiceContracts
 {
@@ -13,5 +14,8 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// <param name="user">The user information used in the token claims.</param>
         /// <returns>An <see cref="AuthenticationDto"/> containing the access token, refresh token, and expiration times.</returns>
         AuthenticationDto CreateJwtToken(JwtUserDto user);
+
+        ClaimsPrincipal? GetPrincipalFromJwtToken(string? token);
+
     }
 }

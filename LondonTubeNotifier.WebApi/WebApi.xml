@@ -37,6 +37,15 @@
             <response code="204">User logged out successfully.</response>
             <remarks>Clears refresh token from the database.</remarks>
         </member>
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GenerateNewAccessToken(LondonTubeNotifier.Core.DTOs.TokensDto)">
+            <summary>
+            Generates a new access token using a valid refresh token.
+            </summary>
+            <param name="tokens">The current access token and refresh token pair.</param>
+            <returns>A new <see cref="T:LondonTubeNotifier.WebApi.Dtos.AuthenticationResponse"/> containing a refreshed access token.</returns>
+            <response code="200">A new access token was successfully generated.</response>
+            <response code="400">The provided tokens are invalid or the refresh token has expired.</response>
+        </member>
         <member name="T:LondonTubeNotifier.WebApi.Controllers.LinesController">
             <summary>
             Provides endpoints to manage and retrieve information about London Tube lines.

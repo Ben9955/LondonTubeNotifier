@@ -137,5 +137,62 @@ namespace LondonTubeNotifier.WebApi.Controllers
             }
             return NoContent();
         }
+
+        /// <summary>
+        /// Generates a new access token using a valid refresh token.
+        /// </summary>
+        /// <param name="tokens">The current access token and refresh token pair.</param>
+        /// <returns>A new <see cref="AuthenticationResponse"/> containing a refreshed access token.</returns>
+        /// <response code="200">A new access token was successfully generated.</response>
+        /// <response code="400">The provided tokens are invalid or the refresh token has expired.</response>
+        [HttpPost("generate-new-jwt-token")]
+        public async Task<ActionResult<AuthenticationResponse>> GenerateNewAccessToken(TokensDto tokens)
+        {
+
+            if (tokens == null)
+            {
+                return BadRequest("Invalid client request");
+            }
+
+            ClaimsPrincipal? principal = _jwtService.GetPrincipalFromJwtToken(tokens.Token);
+            if (principal == null)
+            {
+                return BadRequest("Invalid jwt access token");
+            }
+
+            var userIdString = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!Guid.TryParse(userIdString, out var userId))
+                return BadRequest("Invalid jwt access token");
+
+            ApplicationUser? user = await _userManager.FindByIdAsync(userIdString);
+
+            if (user == null || user.RefreshToken != tokens.RefreshToken || user.RefreshTokenExpiration <= DateTime.Now)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+
+            var jwtUserDto = new JwtUserDto
+            {
+                UserName = user.FullName ?? user.UserName!,
+                Id = user.Id,
+            };
+
+            AuthenticationDto authenticationDto = _jwtService.CreateJwtToken(jwtUserDto);
+
+            user.RefreshToken = authenticationDto.RefreshToken;
+            user.RefreshTokenExpiration = authenticationDto.RefreshTokenExpiration;
+            await _userManager.UpdateAsync(user);
+
+            AuthenticationResponse authenticationResponse = new AuthenticationResponse
+            {
+                AccessToken = authenticationDto.AccessToken,
+                AccessTokenExpiration = authenticationDto.AccessTokenExpiration,
+                RefreshToken = authenticationDto.RefreshToken,
+
+            };
+
+            return Ok(authenticationResponse);
+        }
     }
 }
