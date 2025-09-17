@@ -22,3 +22,29 @@ obj/
 
 # Others
 *.DS_Store
+
+# ----------------------------------------
+# Frontend (Vite/React) files
+# ----------------------------------------
+# Node modules
+/Frontend/node_modules/
+
+# Production build files
+/Frontend/dist/
+/Frontend/build/
+
+# Log files
+/Frontend/npm-debug.log
+/Frontend/yarn-debug.log
+/Frontend/yarn-error.log
+
+# Temporary files
+/Frontend/.vite/
+/Frontend/.cache/
+
+# Environment variables
+/Frontend/.env
+/Frontend/.env.local
+/Frontend/.env.development.local
+/Frontend/.env.test.local
+/Frontend/.env.production.local
