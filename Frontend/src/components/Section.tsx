@@ -1,7 +1,7 @@
 type SectionProps = {
   title: string;
   tag?: string;
-  description: string;
+  description?: string;
   children?: React.ReactNode;
 };
 
@@ -12,7 +12,7 @@ function Section({ title, tag, description, children }: SectionProps) {
       <div className="text-center md:text-left max-w-4xl mx-auto">
         {tag && <h4 className="ont-semibold text-lg md:text-xl">{tag}</h4>}
         <h2 className="text-2xl md:text-3xl font-semibold my-2">{title}</h2>
-        <p className="text-base md:text-lg">{description}</p>
+        {description && <p className="text-base md:text-lg">{description}</p>}
       </div>
       {children}
     </section>

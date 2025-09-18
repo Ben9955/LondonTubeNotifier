@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
-import Navbar from "./components/NavBar";
+import Navbar from "./components/Navbar";
+import AboutPage from "./pages/AboutPage";
 
 export default function App() {
   return (
@@ -10,8 +10,8 @@ export default function App() {
       <Navbar />
       <main className="pt-20">
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<AboutPage />} />
+          <Route path="/login" element={<AboutPage />} />
           <Route path="/subscriptions" element={<SubscriptionsPage />} />
         </Routes>
       </main>
