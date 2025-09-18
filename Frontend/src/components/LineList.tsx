@@ -1,4 +1,5 @@
 import type { Line } from "../types/Line";
+import LineCard from "./LineCard";
 
 export const dummyLines: Line[] = [
   {
@@ -69,8 +70,47 @@ function groupByMode(lines: Line[]): Record<string, Line[]> {
   }, {} as Record<string, Line[]>);
 }
 
-function LineList() {
-  const grouped = groupByMode(dummyLines);
+// function LineList() {
+//   const grouped = groupByMode(dummyLines);
+
+//   const modeLabels: Record<string, string> = {
+//     tube: "🚇 Tube",
+//     dlr: "🚊 DLR",
+//     overground: "🚆 Overground",
+//     "elizabeth-line": "🚄 Elizabeth Line",
+//     tram: "🚋 Tram",
+//   };
+
+//   return (
+//     <div className="mt-5 space-y-8 max-w-2xl mx-auto">
+//       {Object.entries(grouped).map(([mode, lines]) => (
+//         <div key={mode} className="space-y-3">
+//           <h2 className="text-2xl font-semibold border-b pb-2">
+//             {modeLabels[mode] || mode}
+//           </h2>
+//           <div className="space-y-2">
+//             {lines.map((line) => (
+//               <div
+//                 key={line.id}
+//                 className="p-3 rounded-md text-white"
+//                 style={{
+//                   backgroundColor: line.color,
+//                 }}
+//               >
+//                 <strong>{line.name}</strong> — {line.status}
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
+
+// export default LineList;
+
+function LineList({ lines }: { lines: Line[] }) {
+  const grouped = groupByMode(lines);
 
   const modeLabels: Record<string, string> = {
     tube: "🚇 Tube",
@@ -89,15 +129,12 @@ function LineList() {
           </h2>
           <div className="space-y-2">
             {lines.map((line) => (
-              <div
+              <LineCard
                 key={line.id}
-                className="p-3 rounded-md text-white"
-                style={{
-                  backgroundColor: line.color,
-                }}
-              >
-                <strong>{line.name}</strong> — {line.status}
-              </div>
+                name={line.name}
+                status={line.status}
+                color={line.color}
+              />
             ))}
           </div>
         </div>

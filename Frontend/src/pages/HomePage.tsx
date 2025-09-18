@@ -2,10 +2,11 @@ import CallToAction from "../components/CallToAction";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import LineList from "../components/LineList";
+import LineList, { dummyLines } from "../components/LineList";
 import Section from "../components/Section";
 
 const HomePage = () => {
+  const dummyList = dummyLines;
   return (
     <div>
       <Header />
@@ -21,7 +22,7 @@ const HomePage = () => {
         title="London Underground Line Status"
         description="Real-time updates for all London Tube lines"
       >
-        <LineList />
+        <LineList lines={dummyLines} />
       </Section>
 
       <CallToAction />
