@@ -33,8 +33,9 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// <response code="400">Username or email already exists.</response>
         /// <remarks>Returns AccessToken and RefreshToken on success.</remarks>
         [HttpPost("register")]
-        public async Task<ActionResult<AuthenticationResponse>> Register(RegisterRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> Register([FromBody] RegisterRequest request)
         {
+
             if (await _userManager.FindByNameAsync(request.UserName) != null)
                 return BadRequest(new { Error = "Username already taken" });
 
@@ -92,7 +93,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
                        ?? await _userManager.FindByEmailAsync(request.EmailOrUsername);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-                return Unauthorized("Invalid credentials");
+                return Unauthorized(new { Error = "Authentication failed" });
 
             var jwtUser = new JwtUserDto { Id = user.Id, UserName = user.UserName! };
             var auth = _jwtService.CreateJwtToken(jwtUser);

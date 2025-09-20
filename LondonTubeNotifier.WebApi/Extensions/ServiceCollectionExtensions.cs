@@ -140,6 +140,20 @@ namespace LondonTubeNotifier.WebApi.Extensions
             return services;
         }
 
+        public static IServiceCollection AddCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                });
+            });
+            return services;
+        }
+
         public static IServiceCollection AddNotificationsAndEmail(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();

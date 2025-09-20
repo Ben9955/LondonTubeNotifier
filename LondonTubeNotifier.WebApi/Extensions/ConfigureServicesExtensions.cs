@@ -21,6 +21,8 @@ namespace LondonTubeNotifier.WebApi.Extensions
 
             services.AddHostedServices();
 
+            services.AddCors();
+
             services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
             services.Configure<TflSettings>(builder.Configuration.GetSection("Tfl"));
             services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));

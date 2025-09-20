@@ -15,6 +15,8 @@ var app = builder.Build();
 
 app.UseHttpLogging();
 
+app.UseCors();
+
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 
@@ -29,6 +31,18 @@ app.UseAuthorization();
 app.MapHub<TflLiveHub>("/TflLiveHub");
 
 app.MapControllers();
+
+app.Use(async (context, next) =>
+{
+    context.Request.EnableBuffering();
+
+    using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+    var body = await reader.ReadToEndAsync();
+    Console.WriteLine($"Incoming body: {body}");
+
+    context.Request.Body.Position = 0;
+    await next();
+});
 
 app.Run();
 
