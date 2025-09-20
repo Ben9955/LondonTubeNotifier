@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function CallToAction() {
   return (
     <div className="py-16 px-5 ">
@@ -11,9 +13,12 @@ function CallToAction() {
           </p>
 
           <div className="mt-6 mb-10 flex justify-center md:justify-start gap-6">
-            <button className="bg-blue-600 text-amber-200">
+            <Link
+              to="/auth"
+              className="bg-blue-600  text-amber-200 px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+            >
               Subscribe Now
-            </button>
+            </Link>
           </div>
         </div>
         <div className="md:w-1/2">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,19 +10,14 @@ function Navbar() {
       {/* Desktop links */}
       <ul className="hidden md:flex space-x-6">
         <li>
-          <a href="#" className="hover:text-blue-600">
+          <NavLink className="hover:text-blue-600" to="/">
             Home
-          </a>
+          </NavLink>
         </li>
         <li>
-          <a href="#" className="hover:text-blue-600">
-            Features
-          </a>
-        </li>
-        <li>
-          <a href="#" className="hover:text-blue-600">
+          <NavLink className="hover:text-blue-600" to="/about">
             About
-          </a>
+          </NavLink>
         </li>
       </ul>
 
