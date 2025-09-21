@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  console.log(isOpen);
   return (
     <nav className="fixed w-full bg-white opacity-96 backdrop-blur-md shadow-md px-6 py-4 flex justify-between items-center">
       {/* Desktop links */}
@@ -34,7 +35,16 @@ function Navbar() {
       </button>
 
       <div className="text-2xl font-bold">TubeNotifier</div>
-      <button className="bg-blue-600 text-amber-200">Explore</button>
+
+      {isAuthenticated ? (
+        <Link className="bg-blue-600 text-amber-200" to="/auth">
+          Login
+        </Link>
+      ) : (
+        <Link className="hover:text-blue-600" to="/settings">
+          Profile
+        </Link>
+      )}
 
       {/* Mobile menu */}
       {isOpen && (

@@ -4,12 +4,19 @@ import { login, register } from "../services/authService";
 import axios from "axios";
 import LoadingSpinner from "../components/Spinner";
 import type { LoginPayload, RegisterPayload } from "../types/auth";
+import { useAuth } from "../hooks/useAuth";
+import type { User } from "../types/user";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const { setUser } = useAuth();
+
+  const navigate: NavigateFunction = useNavigate();
 
   function toggleMode() {
     setIsLogin(!isLogin);
@@ -20,6 +27,7 @@ export default function AuthPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
 
     const formData = new FormData(e.currentTarget);
 
@@ -32,10 +40,10 @@ export default function AuthPage() {
             "",
           password: formData.get("password")?.toString() ?? "",
         };
-        const user = await login(payload);
+        const user: User = await login(payload);
 
-        console.log("Logged in:", user);
-        // TODO: save token in localStorage and redirect to homepage
+        setUser(user);
+        navigate("/");
       } else {
         const rawPassword = formData.get("password")?.toString() ?? "";
 
@@ -55,9 +63,10 @@ export default function AuthPage() {
           phoneNumber:
             formData.get("phoneNumber")?.toString().trim() || undefined,
         };
-        const user = await register(payload);
-        console.log("Registered:", user);
-        // TODO: auto-login or redirect to login page
+        const user: User = await register(payload);
+
+        setUser(user);
+        navigate("/");
       }
     } catch (err: any) {
       console.log(err);

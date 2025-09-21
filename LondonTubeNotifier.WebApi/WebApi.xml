@@ -37,7 +37,7 @@
             <response code="204">User logged out successfully.</response>
             <remarks>Clears refresh token from the database.</remarks>
         </member>
-        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GenerateNewAccessToken(LondonTubeNotifier.Core.DTOs.TokensDto)">
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GenerateNewAccessToken">
             <summary>
             Generates a new access token using a valid refresh token.
             </summary>

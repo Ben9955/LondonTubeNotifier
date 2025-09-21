@@ -145,7 +145,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// <returns>No content on success.</returns>
         /// <response code="204">User logged out successfully.</response>
         /// <remarks>Clears refresh token from the database.</remarks>
-        [HttpGet("logout")]
+        [HttpPost("logout")]
         public async Task<IActionResult> GetLogout()
         {
             var userId = User.FindFirstValue("sub");
@@ -159,6 +159,15 @@ namespace LondonTubeNotifier.WebApi.Controllers
                     await _userManager.UpdateAsync(user);
                 }
             }
+
+            Response.Cookies.Append("refreshToken", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(-1)
+            });
+
             return NoContent();
         }
 

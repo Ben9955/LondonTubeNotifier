@@ -7,6 +7,7 @@ import Section from "../components/Section";
 
 const HomePage = () => {
   const dummyList = dummyLines;
+
   return (
     <div>
       <Header />

@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
+import PrivateRoute from "./components/PrivateRoute";
 
 export default function App() {
   return (
@@ -14,6 +15,15 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/auth" element={<AuthPage />} />
+
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <SettingsPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
     </BrowserRouter>
