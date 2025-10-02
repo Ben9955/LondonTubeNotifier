@@ -16,6 +16,7 @@ namespace LondonTubeNotifier.WebApi.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier?.ToUpperInvariant();
+
             if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.AddUser(userId, Context.ConnectionId);
@@ -28,6 +29,7 @@ namespace LondonTubeNotifier.WebApi.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.UserIdentifier?.ToUpperInvariant();
+
             if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.RemoveUser(userId, Context.ConnectionId);

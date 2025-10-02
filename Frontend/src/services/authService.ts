@@ -2,6 +2,7 @@ import api, { setAccessToken } from "./apiClient";
 import type { LoginPayload, RegisterPayload } from "../types/auth";
 import type { User } from "../types/user";
 import { mapToUser } from "../mappers/userMapper";
+import { stopConnection } from "./signalrService";
 
 export async function register(requestData: RegisterPayload): Promise<User> {
   const res = await api.post("account/register", requestData, {
@@ -35,6 +36,7 @@ export async function logout() {
   setAccessToken(null);
   try {
     await api.post("account/logout", {}, { withCredentials: true });
+    await stopConnection();
   } catch (err) {
     console.log(err);
   }

@@ -29,6 +29,8 @@ namespace LondonTubeNotifier.Core.Services
 
                 if (connectionIds.IsEmpty) _onlineUsers.TryRemove(userId, out _);
             }
+
+
         }
 
         public bool IsUserOnline(string userId)

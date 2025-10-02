@@ -29,7 +29,7 @@ namespace LondonTubeNotifier.Core.Services
                 _logger.LogDebug("User online - Sending SignalR notification for {LineName} to {UserName}",
                     notificationDto.LineUpdates.LineName, notificationDto.RecipientName);
 
-                await _realtimeNotifier.NotifyUserAsync(userId, notificationDto, cancellationToken);
+                await _realtimeNotifier.NotifyUserAsync(userId, notificationDto.LineUpdates, cancellationToken);
             }
             else
             {

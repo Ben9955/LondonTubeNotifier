@@ -10,7 +10,7 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// <summary>
         /// Notifies a single user immediately.
         /// </summary>
-        Task NotifyUserAsync(string userId, NotificationDto notificationDto, CancellationToken cancellationToken);
+        Task NotifyUserAsync(string userId, LineStatusesDto statusesDto, CancellationToken cancellationToken);
 
         /// <summary>
         /// Broadcasts notifications to all users in real-time.

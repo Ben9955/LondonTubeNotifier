@@ -15,17 +15,15 @@ namespace LondonTubeNotifier.WebApi.Hubs
             _logger = logger;
         }
 
-        public async Task NotifyUserAsync(string userId, NotificationDto notificationDto, CancellationToken cancellationToken)
+        public async Task NotifyUserAsync(string userId, LineStatusesDto statusesDto, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(userId)) return;
-            
-            var normalizedUserId = userId.ToUpperInvariant();
-            
+                        
             _logger.LogInformation("Sending real-time notification to user {UserId}", normalizedUserId);
 
             // Send notification via SignalR
-            await _hubContext.Clients.User(normalizedUserId)
-                .SendAsync("ReceiveLineUpdate", notificationDto, cancellationToken);
+            await _hubContext.Clients.User(userId.ToLowerInvariant())
+                .SendAsync("ReceiveLineUpdate", statusesDto, cancellationToken);
         }
 
         public async Task NotifyAllAsync(FullStatusNotificationDto notificationDto, CancellationToken cancellationToken)

@@ -6,26 +6,41 @@ import ProfilePage from "./pages/ProfilePage";
 import AuthPage from "./pages/AuthPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { useAuth } from "./hooks/useAuth";
-import { onLineUpdate, startConnection } from "./services/signalrService";
+import {
+  offLineUpdate,
+  onLineUpdate,
+  startConnection,
+  stopConnection,
+} from "./services/signalrService";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
+import { showLineUpdateToast } from "./components/toasts/showLineUpdateToast";
 
 export default function App() {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      startConnection().then(() => {
+    const initSignalR = async () => {
+      if (isAuthenticated) {
+        await stopConnection();
+
+        await startConnection();
+
+        offLineUpdate();
         onLineUpdate((data) => {
-          console.log("Global line update:", data);
-          // Toaster.show({ message: `Line ${data.lineUpdates.lineId} updated` });
+          console.log("🔥 Global line update:", data);
+          showLineUpdateToast(data);
         });
-      });
-    }
+      }
+    };
+
+    initSignalR();
   }, [isAuthenticated]);
 
   return (
     <BrowserRouter>
       <Navbar />
+      <Toaster position="top-center" reverseOrder={false} />
       <main className="pt-20">
         <Routes>
           <Route path="/" element={<HomePage />} />
