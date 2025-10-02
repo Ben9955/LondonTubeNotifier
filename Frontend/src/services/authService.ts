@@ -1,169 +1,49 @@
-import axios from "axios";
+import api, { setAccessToken } from "./apiClient";
 import type { LoginPayload, RegisterPayload } from "../types/auth";
 import type { User } from "../types/user";
-
-// accessToken
-let accessToken: string | null = null;
-
-export function getAccessToken() {
-  return accessToken;
-}
-
-function setAccessToken(token: string) {
-  accessToken = token;
-}
-
-let isRefreshing = false;
-let failedQueue: any[] = [];
-
-// Function to process the queue of failed requests
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
-
-const api = axios.create({
-  baseURL: "https://localhost:7284/api",
-  withCredentials: true,
-});
-
-// Request Interceptor: Add the access token to the Authorization header
-api.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response Interceptor: Handle automatic token refreshing
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response.status === 401 && !originalRequest._retry) {
-      if (!getAccessToken()) {
-        logout();
-        return Promise.reject(error);
-      }
-
-      // Mark the original request for retry
-      originalRequest._retry = true;
-
-      // Check if another refresh request is already in progress
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axios(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      isRefreshing = true;
-
-      try {
-        const newAccessToken = await refreshAccessToken();
-
-        if (newAccessToken) {
-          //set accessToken in memory
-          setAccessToken(newAccessToken);
-
-          // Retry all queued requests with the new token
-          processQueue(null, newAccessToken);
-
-          // Retry the original failed request
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return axios(originalRequest);
-        }
-      } catch (err) {
-        // If the refresh token request fails, it means the user needs to log in again
-        processQueue(err);
-        logout();
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-    // For all other errors, just reject the promise
-    return Promise.reject(error);
-  }
-);
-
-export default api;
+import { mapToUser } from "../mappers/userMapper";
 
 export async function register(requestData: RegisterPayload): Promise<User> {
   const res = await api.post("account/register", requestData, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
   });
 
-  const data = res.data;
-
-  console.log(data);
-
-  setAccessToken(data.accessToken);
-  const user: User = {
-    username: data.userName,
-    email: data.email,
-    fullName: data.fullName,
-    subscriptions: data.subscriptions ?? [],
-  };
-
-  return user;
+  setAccessToken(res.data.accessToken);
+  return mapToUser(res.data);
 }
 
-export async function login(requestData: LoginPayload) {
+export async function login(requestData: LoginPayload): Promise<User> {
   const res = await api.post("account/login", requestData, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
   });
 
-  const data = res.data;
-
-  console.log(data);
-
-  setAccessToken(data.accessToken);
-  const user: User = {
-    username: data.userName,
-    email: data.email,
-    fullName: data.fullName,
-    subscriptions: data.subscriptions ?? [],
-  };
-
-  return user;
+  setAccessToken(res.data.accessToken);
+  return mapToUser(res.data);
 }
 
-export async function refreshAccessToken() {
+export async function refreshAccessToken(): Promise<User> {
   const res = await api.post(
     "account/generate-new-jwt-token",
     {},
-    {
-      withCredentials: true,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+    { withCredentials: true }
   );
   setAccessToken(res.data.accessToken);
-  return res.data.accessToken;
+  return mapToUser(res.data);
 }
 
 export async function logout() {
-  accessToken = null;
-  await api.post("account/logout", { withCredentials: true });
+  setAccessToken(null);
+  try {
+    await api.post("account/logout", {}, { withCredentials: true });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+export async function updateProfile(updatedUser: Partial<User>): Promise<User> {
+  const res = await api.put("account/update-profile", updatedUser, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return mapToUser(res.data);
 }

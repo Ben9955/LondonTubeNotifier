@@ -1,10 +1,11 @@
-﻿using System.Security.Claims;
-using LondonTubeNotifier.Core.DTOs;
+﻿using LondonTubeNotifier.Core.DTOs;
 using LondonTubeNotifier.Core.ServiceContracts;
 using LondonTubeNotifier.Infrastructure.Entities;
 using LondonTubeNotifier.WebApi.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace LondonTubeNotifier.WebApi.Controllers
 {
@@ -48,6 +49,8 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 FullName = request.FullName,
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber,
+                PushNotifications = request.PushNotifications,
+                EmailNotifications = request.EmailNotifications,
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -58,7 +61,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
             }
 
             var jwtUser = new JwtUserDto { Id = user.Id, UserName = user.UserName };
-            var auth = _jwtService.CreateJwtToken(jwtUser);
+            var auth = _jwtService.CreateJwtToken(jwtUser, false);
 
             user.RefreshToken = auth.RefreshToken;
             user.RefreshTokenExpiration = auth.RefreshTokenExpiration;
@@ -67,13 +70,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
             Response.Cookies.Append(
                 "refreshToken",
                 auth.RefreshToken!,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    //Secure = true,   
-                    SameSite = SameSiteMode.Strict,
-                    Expires = auth.RefreshTokenExpiration
-                }
+                GetCookieOptions(auth.RefreshTokenExpiration)
             );
 
             var response = new AuthenticationResponse
@@ -82,6 +79,8 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 Email = user.Email,
                 UserName = user.UserName,
                 FullName = user.FullName,
+                PushNotifications = user.PushNotifications,
+                EmailNotifications = user.EmailNotifications,
                 AccessToken = auth.AccessToken,
                 AccessTokenExpiration = auth.AccessTokenExpiration
             };
@@ -108,7 +107,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 return Unauthorized(new { Error = "Authentication failed" });
 
             var jwtUser = new JwtUserDto { Id = user.Id, UserName = user.UserName! };
-            var auth = _jwtService.CreateJwtToken(jwtUser);
+            var auth = _jwtService.CreateJwtToken(jwtUser, false);
 
             user.RefreshToken = auth.RefreshToken;
             user.RefreshTokenExpiration = auth.RefreshTokenExpiration;
@@ -117,27 +116,61 @@ namespace LondonTubeNotifier.WebApi.Controllers
             Response.Cookies.Append(
                 "refreshToken",
                 auth.RefreshToken!,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = auth.RefreshTokenExpiration
-                }
+                GetCookieOptions(auth.RefreshTokenExpiration)
             );
 
             var response = new AuthenticationResponse
             {
                 Id = user.Id,
-                Email = user.Email,
-                UserName = user.UserName,
+                Email = user.Email!,
+                UserName = user.UserName!,
                 FullName = user.FullName,
+                PushNotifications = user.PushNotifications,
+                EmailNotifications = user.EmailNotifications,
                 AccessToken = auth.AccessToken,
                 AccessTokenExpiration = auth.AccessTokenExpiration
             };
 
             return Ok(response);
         }
+
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<ActionResult<UpdateProfileResponse>> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized(new { Error = "User not found" });
+            }
+
+            user.FullName = request.FullName;
+            user.PhoneNumber = request.PhoneNumber;
+            user.PushNotifications = request.PushNotifications;
+            user.EmailNotifications = request.EmailNotifications;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                return BadRequest(new { Errors = errors });
+            }
+
+            // Return fresh profile info
+            var response = new UpdateProfileResponse
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                UserName = user.UserName!,
+                FullName = user.FullName,
+                PushNotifications = user.PushNotifications,
+                EmailNotifications = user.EmailNotifications
+            };
+
+            return Ok(response);
+        }
+
 
         /// <summary>
         /// Logs out the user by clearing their refresh token.
@@ -146,12 +179,13 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// <response code="204">User logged out successfully.</response>
         /// <remarks>Clears refresh token from the database.</remarks>
         [HttpPost("logout")]
-        public async Task<IActionResult> GetLogout()
+        public async Task<IActionResult> Logout()
         {
-            var userId = User.FindFirstValue("sub");
-            if (userId != null)
+            string? refreshToken = Request.Cookies["refreshToken"];
+
+            if (!string.IsNullOrEmpty(refreshToken))
             {
-                var user = await _userManager.FindByIdAsync(userId);
+                var user = _userManager.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
                 if (user != null)
                 {
                     user.RefreshToken = null;
@@ -160,14 +194,7 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 }
             }
 
-            Response.Cookies.Append("refreshToken", "", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(-1)
-            });
-
+            Response.Cookies.Append("refreshToken", "", GetCookieOptions(DateTime.UtcNow.AddDays(-1)));
             return NoContent();
         }
 
@@ -179,37 +206,25 @@ namespace LondonTubeNotifier.WebApi.Controllers
         /// <response code="200">A new access token was successfully generated.</response>
         /// <response code="400">The provided tokens are invalid or the refresh token has expired.</response>
         [HttpPost("generate-new-jwt-token")]
-        public async Task<ActionResult<AuthenticationResponse>> GenerateNewAccessToken()
+        public async Task<ActionResult<AuthenticationResponse>> GenerateNewJwtToken()
         {
-            var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                return BadRequest("Access token is missing.");
-            }
-
-            ClaimsPrincipal? principal = _jwtService.GetPrincipalFromJwtToken(accessToken);
-            if (principal == null)
-            {
-                return BadRequest("Invalid jwt access token");
-            }
-
-            var userIdString = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!Guid.TryParse(userIdString, out var userId))
-                return BadRequest("Invalid jwt access token");
-
-
             string? refreshToken = Request.Cookies["refreshToken"];
+
             if (string.IsNullOrEmpty(refreshToken))
             {
-                return BadRequest("Invalid client request - no refresh token found");
+                return BadRequest(new { Error = "No refresh token provided." });
             }
 
-            ApplicationUser? user = await _userManager.FindByIdAsync(userIdString);
+            var user = _userManager.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
 
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiration <= DateTime.Now)
+            if (user == null)
             {
-                return BadRequest("Invalid refresh token");
+                return BadRequest(new { Error = "Invalid refresh token." });
+            }
+
+            if (user.RefreshTokenExpiration <= DateTime.UtcNow)
+            {
+                return BadRequest(new { Error = "Expired refresh token." });
             }
 
             var jwtUserDto = new JwtUserDto
@@ -218,30 +233,41 @@ namespace LondonTubeNotifier.WebApi.Controllers
                 Id = user.Id,
             };
 
-            AuthenticationDto authenticationDto = _jwtService.CreateJwtToken(jwtUserDto);
-
-            user.RefreshToken = authenticationDto.RefreshToken;
-            user.RefreshTokenExpiration = authenticationDto.RefreshTokenExpiration;
-            await _userManager.UpdateAsync(user);
+            AuthenticationDto auth = _jwtService.CreateJwtToken(jwtUserDto, true);
 
             Response.Cookies.Append(
                 "refreshToken",
-                authenticationDto.RefreshToken!,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = authenticationDto.RefreshTokenExpiration
-                });
+                user.RefreshToken!,
+                GetCookieOptions(user.RefreshTokenExpiration)
+                );
+
 
             AuthenticationResponse authenticationResponse = new AuthenticationResponse
             {
-                AccessToken = authenticationDto.AccessToken,
-                AccessTokenExpiration = authenticationDto.AccessTokenExpiration,
+                 Id = user.Id,
+                Email = user.Email!,
+                UserName = user.UserName!,
+                FullName = user.FullName,
+                PushNotifications = user.PushNotifications,
+                EmailNotifications = user.EmailNotifications,
+                AccessToken = auth.AccessToken,
+                AccessTokenExpiration = auth.AccessTokenExpiration
             };
 
             return Ok(authenticationResponse);
+        }
+
+
+        private CookieOptions GetCookieOptions(DateTime? expires)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = true,
+                Path = "/",
+                Expires = expires,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+            };
         }
     }
 }

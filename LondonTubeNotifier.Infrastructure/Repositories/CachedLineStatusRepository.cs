@@ -36,13 +36,31 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
              }) ?? new Dictionary<string, HashSet<LineStatus>>();
         }
 
-        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> statuses, CancellationToken cancellationToken)
+        public async Task UpdateLinesAsync(Dictionary<string, List<LineStatus>> updates, CancellationToken cancellationToken)
         {
-            await _innerRepository.SaveStatusAsync(statuses, cancellationToken);
+            await _innerRepository.UpdateLinesAsync(updates, cancellationToken);
 
-            _memoryCache.Set(CacheKey, statuses, new MemoryCacheEntryOptions
+            if (!_memoryCache.TryGetValue<Dictionary<string, HashSet<LineStatus>>>(CacheKey, out var cachedStatuses))
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+                cachedStatuses = await _innerRepository.GetLatestLineStatusesAsync(cancellationToken);
+                _memoryCache.Set(CacheKey, cachedStatuses, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                });
+
+                return;
+            }
+
+            foreach (var kvp in updates)
+            {
+                var lineId = kvp.Key;
+                var newStatuses = kvp.Value;
+                cachedStatuses[lineId] = newStatuses.ToHashSet();
+            }
+
+            _memoryCache.Set(CacheKey, cachedStatuses, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
             });
         }
     }

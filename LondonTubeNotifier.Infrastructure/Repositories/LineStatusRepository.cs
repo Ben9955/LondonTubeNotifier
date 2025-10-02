@@ -31,28 +31,21 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
                 .ToDictionary(g => g.Key, g => g.ToHashSet());
         }
 
-        public async Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> dicStatuses, CancellationToken cancellationToken)
+        public async Task UpdateLinesAsync(Dictionary<string, List<LineStatus>> updates, CancellationToken cancellationToken)
         {
-
-            using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            try
+            foreach (var kvp in updates)
             {
-                List<LineStatus> statuses = dicStatuses.SelectMany(s => s.Value).ToList();
+                var lineId = kvp.Key;
+                var newStatuses = kvp.Value;
 
-                _dbContext.LineStatuses.RemoveRange(_dbContext.LineStatuses);
+                var existingStatuses = _dbContext.LineStatuses.Where(s => s.LineId == lineId);
+                _dbContext.LineStatuses.RemoveRange(existingStatuses);
 
-                await _dbContext.LineStatuses.AddRangeAsync(statuses, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-
-                await transaction.CommitAsync(cancellationToken);
-
+                _dbContext.LineStatuses.AddRange(newStatuses);
             }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+
+            await _dbContext.SaveChangesAsync();
         }
+
     }
 }

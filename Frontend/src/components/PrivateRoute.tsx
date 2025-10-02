@@ -6,7 +6,7 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;

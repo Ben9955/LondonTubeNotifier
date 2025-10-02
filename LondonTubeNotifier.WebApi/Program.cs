@@ -2,6 +2,7 @@ using LondonTubeNotifier.WebApi.Middleware;
 using System.IdentityModel.Tokens.Jwt;
 using LondonTubeNotifier.WebApi.Hubs;
 using LondonTubeNotifier.WebApi.Extensions;
+using LondonTubeNotifier.Infrastructure.Data;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -12,6 +13,8 @@ builder.Services.ConfigureServices(builder);
 
 
 var app = builder.Build();
+
+await DatabaseSeeder.SeedAsync(app.Services);
 
 app.UseHttpLogging();
 

@@ -61,96 +61,6 @@ namespace LondonTubeNotifier.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Lines");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "bakerloo",
-                            Code = "BL",
-                            Color = "#B36305",
-                            ModeName = "",
-                            Name = "Bakerloo"
-                        },
-                        new
-                        {
-                            Id = "central",
-                            Code = "CL",
-                            Color = "#E32017",
-                            ModeName = "",
-                            Name = "Central"
-                        },
-                        new
-                        {
-                            Id = "circle",
-                            Code = "CC",
-                            Color = "#FFD300",
-                            ModeName = "",
-                            Name = "Circle"
-                        },
-                        new
-                        {
-                            Id = "district",
-                            Code = "DL",
-                            Color = "#00782A",
-                            ModeName = "",
-                            Name = "District"
-                        },
-                        new
-                        {
-                            Id = "hammersmith-city",
-                            Code = "HCL",
-                            Color = "#F3A9BB",
-                            ModeName = "",
-                            Name = "Hammersmith & City"
-                        },
-                        new
-                        {
-                            Id = "jubilee",
-                            Code = "JL",
-                            Color = "#6A7278",
-                            ModeName = "",
-                            Name = "Jubilee"
-                        },
-                        new
-                        {
-                            Id = "metropolitan",
-                            Code = "ML",
-                            Color = "#9B0056",
-                            ModeName = "",
-                            Name = "Metropolitan"
-                        },
-                        new
-                        {
-                            Id = "northern",
-                            Code = "NL",
-                            Color = "#000000",
-                            ModeName = "",
-                            Name = "Northern"
-                        },
-                        new
-                        {
-                            Id = "piccadilly",
-                            Code = "PL",
-                            Color = "#0019A8",
-                            ModeName = "",
-                            Name = "Piccadilly"
-                        },
-                        new
-                        {
-                            Id = "victoria",
-                            Code = "VL",
-                            Color = "#0098D4",
-                            ModeName = "",
-                            Name = "Victoria"
-                        },
-                        new
-                        {
-                            Id = "waterloo-city",
-                            Code = "WCL",
-                            Color = "#95CDBA",
-                            ModeName = "",
-                            Name = "Waterloo & City"
-                        });
                 });
 
             modelBuilder.Entity("LondonTubeNotifier.Core.Domain.Entities.LineStatus", b =>
@@ -159,9 +69,9 @@ namespace LondonTubeNotifier.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("datetimeoffset")
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("LineId")
@@ -205,6 +115,9 @@ namespace LondonTubeNotifier.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("EmailNotifications")
+                        .HasColumnType("bit");
+
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
@@ -229,6 +142,9 @@ namespace LondonTubeNotifier.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PushNotifications")
                         .HasColumnType("bit");
 
                     b.Property<string>("RefreshToken")

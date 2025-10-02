@@ -52,7 +52,7 @@ namespace UnitTests.Core
             await _service.CheckForUpdatesAndNotifyAsync(CancellationToken.None);
 
             // Assert
-            _lineStatusRepository.Verify(r => r.SaveStatusAsync(It.IsAny<Dictionary<string, HashSet<LineStatus>>>(), It.IsAny<CancellationToken>()), Times.Never);
+            _lineStatusRepository.Verify(r => r.UpdateLinesAsync(It.IsAny<Dictionary<string, List<LineStatus>>>(), It.IsAny<CancellationToken>()), Times.Never);
             _notificationService.Verify(n => n.NotifyLineSubscribersAsync(It.IsAny<NotificationDto>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -65,6 +65,9 @@ namespace UnitTests.Core
             var newStatus = new HashSet<LineStatus> { new LineStatus { StatusSeverity = 10, StatusDescription = "Severe Delays" } };
             var current = new Dictionary<string, HashSet<LineStatus>> { { lineId, newStatus } };
             var previous = new Dictionary<string, HashSet<LineStatus>> { { lineId, oldStatus } };
+            var changedStatus = new List<LineStatus> { new LineStatus { StatusSeverity = 10, StatusDescription = "Severe Delays" } };
+            var update = new Dictionary<string, List<LineStatus>> { { lineId, changedStatus } };
+
 
             var user = _fixture.Build<UserSubscriptionDto>()
                 .With(u => u.LineId, lineId)
@@ -79,7 +82,7 @@ namespace UnitTests.Core
             await _service.CheckForUpdatesAndNotifyAsync(CancellationToken.None);
 
             // Assert
-            _lineStatusRepository.Verify(r => r.SaveStatusAsync(current, CancellationToken.None), Times.Once);
+            _lineStatusRepository.Verify(r => r.UpdateLinesAsync(update, CancellationToken.None), Times.Once);
             _notificationService.Verify(n => n.NotifyLineSubscribersAsync(It.Is<NotificationDto>(dto =>
                 dto.RecipientId == user.UserId &&
                 dto.LineUpdates.LineId == lineId
@@ -95,6 +98,10 @@ namespace UnitTests.Core
             var newStatus = new HashSet<LineStatus> { new LineStatus { StatusSeverity = 6, StatusDescription = "Minor Delays" } };
             var current = new Dictionary<string, HashSet<LineStatus>> { { lineId, newStatus } };
             var previous = new Dictionary<string, HashSet<LineStatus>> { { lineId, oldStatus } };
+            var changedStatus = new List<LineStatus> { new LineStatus { StatusSeverity = 6, StatusDescription = "Minor Delays" } };
+            var update = new Dictionary<string, List<LineStatus>> { { lineId, changedStatus } };
+
+
 
             _tflApiService.Setup(s => s.GetLinesStatusAsync(CancellationToken.None)).ReturnsAsync(current);
             _lineStatusRepository.Setup(r => r.GetLatestLineStatusesAsync(CancellationToken.None)).ReturnsAsync(previous);
@@ -105,7 +112,7 @@ namespace UnitTests.Core
             await _service.CheckForUpdatesAndNotifyAsync(CancellationToken.None);
 
             // Assert
-            _lineStatusRepository.Verify(r => r.SaveStatusAsync(current, CancellationToken.None), Times.Once);
+            _lineStatusRepository.Verify(r => r.UpdateLinesAsync(update, CancellationToken.None), Times.Once);
             _notificationService.Verify(n => n.NotifyLineSubscribersAsync(It.IsAny<NotificationDto>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -118,6 +125,9 @@ namespace UnitTests.Core
             var newStatus = new HashSet<LineStatus> { new LineStatus { StatusSeverity = 10, StatusDescription = "Severe Delays" } };
             var current = new Dictionary<string, HashSet<LineStatus>> { { lineId, newStatus } };
             var previous = new Dictionary<string, HashSet<LineStatus>> { { lineId, oldStatus } };
+            var changedStatus = new List<LineStatus> { new LineStatus { StatusSeverity = 10, StatusDescription = "Severe Delays" } };
+            var update = new Dictionary<string, List<LineStatus>> { { lineId, changedStatus } };
+
 
             var users = _fixture.CreateMany<UserSubscriptionDto>(3)
                 .Select(u => { u.LineId = lineId; return u; })
@@ -132,7 +142,7 @@ namespace UnitTests.Core
             await _service.CheckForUpdatesAndNotifyAsync(CancellationToken.None);
 
             // Assert
-            _lineStatusRepository.Verify(r => r.SaveStatusAsync(current, CancellationToken.None), Times.Once);
+            _lineStatusRepository.Verify(r => r.UpdateLinesAsync(update, CancellationToken.None), Times.Once);
             _notificationService.Verify(n => n.NotifyLineSubscribersAsync(It.IsAny<NotificationDto>(), CancellationToken.None), Times.Exactly(users.Count));
         }
     }

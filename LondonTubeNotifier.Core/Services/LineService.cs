@@ -50,6 +50,8 @@ namespace LondonTubeNotifier.Core.Services
             List<Line> lines = await _lineRepository.GetLinesAsync();
 
             return _lineMapper.ToDtoList(lines);
+
+
         }
     }
 }

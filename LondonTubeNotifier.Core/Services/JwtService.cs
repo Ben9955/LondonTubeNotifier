@@ -19,7 +19,7 @@ namespace LondonTubeNotifier.Core.Services
         {
             _jwtSettings = options.Value;
         }
-        public AuthenticationDto CreateJwtToken(JwtUserDto user)
+        public AuthenticationDto CreateJwtToken(JwtUserDto user, bool reuseRefreshToken= false)
         {
             DateTime expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -48,6 +48,18 @@ namespace LondonTubeNotifier.Core.Services
 
             var tokenHandler = new JwtSecurityTokenHandler();
             string token = tokenHandler.WriteToken(tokenGenerator);
+
+            if (reuseRefreshToken)
+            {
+               return new AuthenticationDto
+                {
+                    AccessToken = token,
+                    AccessTokenExpiration = expiration,
+                    RefreshToken = null,
+                    RefreshTokenExpiration = null
+                };
+
+            }
 
             string refreshToken = GenerateRefreshToken();
             DateTime refreshTokenExpiration = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);

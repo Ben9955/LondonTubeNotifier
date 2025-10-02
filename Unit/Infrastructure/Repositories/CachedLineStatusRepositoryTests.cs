@@ -79,16 +79,16 @@ namespace UnitTests.Infrastructure.Repositories
         public async Task SaveStatusAsync_ShouldSaveToInnerRepositoryAndCache()
         {
             // Arrange
-            var statuses = new Dictionary<string, HashSet<LineStatus>>
+            var statuses = new Dictionary<string, List<LineStatus>>
             {
-                { "victoria", new HashSet<LineStatus> { new LineStatus { LineId = "victoria" } } }
+                { "victoria", new List<LineStatus> { new LineStatus { LineId = "victoria" } } }
             };
 
             // Act
-            await _repository.SaveStatusAsync(statuses, CancellationToken.None);
+            await _repository.UpdateLinesAsync(statuses, CancellationToken.None);
 
             // Assert
-            _innerRepositoryMock.Verify(r => r.SaveStatusAsync(statuses, It.IsAny<CancellationToken>()), Times.Once);
+            _innerRepositoryMock.Verify(r => r.UpdateLinesAsync(statuses, It.IsAny<CancellationToken>()), Times.Once);
 
             _memoryCache.TryGetValue("LineStatusesCache", out Dictionary<string, HashSet<LineStatus>> cached);
             cached.Should().BeEquivalentTo(statuses);

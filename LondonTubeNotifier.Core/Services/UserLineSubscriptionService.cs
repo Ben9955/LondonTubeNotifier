@@ -54,9 +54,9 @@ namespace LondonTubeNotifier.Core.Services
             var linesDto = user.Subscriptions.Select(l => new LineDto
             {
                 Id = l.Id,
-                Code = l.Code,
                 Name = l.Name,
                 Color = l.Color,
+                ModeName = l.ModeName
             });
 
             return linesDto;

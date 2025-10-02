@@ -7,6 +7,8 @@ using LondonTubeNotifier.Core.Exceptions;
 using LondonTubeNotifier.Core.ServiceContracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using LondonTubeNotifier.Infrastructure.Mappers;
+using LondonTubeNotifier.Core.DTOs;
 
 namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
 {
@@ -17,12 +19,14 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
         private readonly ILogger<TflApiService> _logger;
         private readonly string _mode;
         private readonly string _apiKey;
-        public TflApiService(HttpClient client, IOptions<TflSettings> options, ILogger<TflApiService> logger)
+        private readonly ITflLineStatusMapper _tflLineMapper;
+        public TflApiService(HttpClient client, IOptions<TflSettings> options, ILogger<TflApiService> logger, ITflLineStatusMapper tflLineMapper)
         {
             _httpClient = client;
             _logger = logger;
             _mode = options.Value.Modes;
             _apiKey = options.Value.ApiKey;
+            _tflLineMapper = tflLineMapper;
         }
 
         public async Task<Dictionary<string, HashSet<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken)
@@ -32,6 +36,7 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 var uri = $"Line/Mode/{_mode}/Status?app_key={_apiKey}";
 
                 var response = await _httpClient.GetAsync(uri, cancellationToken);
+
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -50,17 +55,13 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 }
 
                 return tflLineDtos
-                    .Where(line => line.LineId != null && line.LineStatuses != null)
-                    .ToDictionary(
-                    line => line.LineId,
-                    line => line.LineStatuses.Select(ls => new LineStatus
-                    {
-                        LineId = line.LineId,
-                        StatusSeverity = ls.StatusSeverity,
-                        StatusDescription = ls.StatusSeverityDescription,
-                        Reason = ls.Reason,
-                    }).ToHashSet()
-                    );
+                .Where(line => line.Id != null && line.LineStatuses != null)
+                .GroupBy(line => line.Id) 
+                .ToDictionary(
+                    g => g.Key,
+
+                    g => _tflLineMapper.ToDomainList(g.Key, g.SelectMany(line => line.LineStatuses)).ToHashSet()
+                          );
             }
             catch (JsonException ex)
             {
@@ -72,6 +73,18 @@ namespace LondonTubeNotifier.Infrastructure.ExternalAPIs
                 _logger.LogError(ex, "TFL API request failed.");
                 throw new TflApiException("TfL API request failed", ex);
             }
+        }
+
+        public async Task<List<LineDto>> GetLinesAsync() { 
+            var uri = $"Line/Mode/{_mode}?app_key={_apiKey}"; 
+            var response = await _httpClient.GetAsync(uri); 
+
+            response.EnsureSuccessStatusCode(); 
+
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true }; 
+            var lines = await response.Content.ReadFromJsonAsync<List<LineDto>>(options); 
+
+            return lines ?? new List<LineDto>(); 
         }
     }
 }

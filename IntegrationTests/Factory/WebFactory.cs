@@ -50,12 +50,12 @@ namespace IntegrationTests.Factory
 
 
                 // Remove real EmailService
-                var emailDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailService));
+                var emailDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IEmailNotifier));
                 if (emailDescriptor != null)
                     services.Remove(emailDescriptor);
 
                 // Add fake EmailService
-                services.AddScoped<IEmailService, FakeEmailService>();
+                services.AddScoped<IEmailNotifier, FakeEmailService>();
             });
         }
     }

@@ -45,7 +45,7 @@ namespace UnitTests.Infrastructure.ExternalAPIs
             {
                 new TflLineDto
                 {
-                    LineId = "victoria",
+                    Id = "victoria",
                     LineStatuses = new List<TflStatusDto>
                     {
                         new TflStatusDto { StatusSeverity = 10, StatusSeverityDescription = "Good Service", Reason = null }

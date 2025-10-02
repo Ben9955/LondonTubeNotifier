@@ -45,7 +45,7 @@ namespace IntegrationTests.Integration
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             lines.Should().NotBeNull();
             lines.Should().HaveCount(fakeLines.Count);
-            lines.Select(l => new { l.Id, l.Code, l.Name, l.Color })
+            lines.Select(l => new { l.Id, l.Name, l.Color })
                  .Should().BeEquivalentTo(fakeLines.Select(f => new { f.Id, f.Code, f.Name, f.Color }));
         }
 

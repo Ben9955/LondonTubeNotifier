@@ -29,9 +29,9 @@ namespace LondonTubeNotifier.Core.Domain.RespositoryContracts
         /// Saves the latest line statuses. Replaces existing records in a transactional way.
         /// </summary>
         /// <param name="statuses">
-        /// A dictionary keyed by line ID, where each value is the set of statuses for that line.
+        /// A dictionary keyed by line ID, where each value is a list of statuses for that line.
         /// </param>
         /// <exception cref="Exception">Throws if saving to the database fails.</exception>
-        Task SaveStatusAsync(Dictionary<string, HashSet<LineStatus>> statuses, CancellationToken cancellationToken);
+        Task UpdateLinesAsync(Dictionary<string, List<LineStatus>> statuses, CancellationToken cancellationToken);
     }
 }

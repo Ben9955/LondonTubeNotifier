@@ -6,9 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LondonTubeNotifier.Infrastructure.Data
 {
-
-
-
     public class ApplicationDbContext : 
         IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
@@ -20,23 +17,6 @@ namespace LondonTubeNotifier.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            var lines = new List<Line>
-            {
-                new Line { Id = "bakerloo", Code = "BL", Name = "Bakerloo", Color = "#B36305" },
-                new Line { Id = "central", Code = "CL", Name = "Central", Color = "#E32017" },
-                new Line { Id = "circle", Code = "CC", Name = "Circle", Color = "#FFD300" },
-                new Line { Id = "district", Code = "DL", Name = "District", Color = "#00782A" },
-                new Line { Id = "hammersmith-city", Code = "HCL", Name = "Hammersmith & City", Color = "#F3A9BB" },
-                new Line { Id = "jubilee", Code = "JL", Name = "Jubilee", Color = "#6A7278" },
-                new Line { Id = "metropolitan", Code = "ML", Name = "Metropolitan", Color = "#9B0056" },
-                new Line { Id = "northern", Code = "NL", Name = "Northern", Color = "#000000" },
-                new Line { Id = "piccadilly", Code = "PL", Name = "Piccadilly", Color = "#0019A8" },
-                new Line { Id = "victoria", Code = "VL", Name = "Victoria", Color = "#0098D4" },
-                new Line { Id = "waterloo-city", Code = "WCL", Name = "Waterloo & City", Color = "#95CDBA" },
-           };
-
-            modelBuilder.Entity<Line>().HasData(lines);
 
             // Many-to-many between ApplicationUser and Line
             modelBuilder.Entity<ApplicationUser>()

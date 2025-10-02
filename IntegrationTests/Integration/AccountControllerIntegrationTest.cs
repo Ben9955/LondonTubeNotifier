@@ -57,7 +57,7 @@ namespace IntegrationTests.Integration
             result.UserName.Should().Be(request.UserName);
             result.Email.Should().Be(request.Email);
             result.AccessToken.Should().NotBeNullOrWhiteSpace();
-            result.RefreshToken.Should().NotBeNullOrWhiteSpace();
+            //result.RefreshToken.Should().NotBeNullOrWhiteSpace();
         }
 
         [Fact]

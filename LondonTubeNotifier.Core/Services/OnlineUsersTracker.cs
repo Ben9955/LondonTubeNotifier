@@ -8,6 +8,7 @@ namespace LondonTubeNotifier.Core.Services
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _onlineUsers = new();
         public void AddUser(string userId, string connectionId)
         {
+
             _onlineUsers.AddOrUpdate(
                 userId,
                 new ConcurrentDictionary<string, byte>(

@@ -42,7 +42,7 @@ namespace UnitTests.WebApi
             _userManager.Setup(u => u.FindByNameAsync(request.UserName)).ReturnsAsync((ApplicationUser)null);
             _userManager.Setup(u => u.FindByEmailAsync(request.Email)).ReturnsAsync((ApplicationUser)null);
             _userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), request.Password)).ReturnsAsync(IdentityResult.Success);
-            _jwtService.Setup(j => j.CreateJwtToken(It.IsAny<JwtUserDto>())).Returns(new AuthenticationDto
+            _jwtService.Setup(j => j.CreateJwtToken(It.IsAny<JwtUserDto>(), false)).Returns(new AuthenticationDto
             {
                 AccessToken = "token",
                 RefreshToken = "refresh",

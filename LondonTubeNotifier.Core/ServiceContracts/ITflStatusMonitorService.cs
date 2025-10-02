@@ -10,5 +10,7 @@
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the operation if needed.</param>
         Task CheckForUpdatesAndNotifyAsync(CancellationToken cancellationToken);
+
+
     }
 }

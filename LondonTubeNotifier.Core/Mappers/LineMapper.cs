@@ -11,12 +11,19 @@ namespace LondonTubeNotifier.Core.Mappers
             return new LineDto
             {
                 Id = line.Id,
-                Code = line.Code,
                 Name = line.Name,
                 Color = line.Color,
                 ModeName = line.ModeName,
-
-    };
+                StatusDescriptions = line.LineStatuses
+                .OrderByDescending(ls => ls.CreatedAt)
+                .Select(ls => new StatusesDto
+                {
+                    StatusSeverity = ls.StatusSeverity,
+                    StatusDescription = ls.StatusDescription,
+                    Reason = ls.Reason,
+                    LastUpdate = ls.CreatedAt
+                }).ToList()
+                };
         }
 
         public List<LineDto> ToDtoList(IEnumerable<Line> lines)

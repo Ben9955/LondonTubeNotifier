@@ -13,7 +13,7 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// </summary>
         /// <param name="user">The user information used in the token claims.</param>
         /// <returns>An <see cref="AuthenticationDto"/> containing the access token, refresh token, and expiration times.</returns>
-        AuthenticationDto CreateJwtToken(JwtUserDto user);
+        AuthenticationDto CreateJwtToken(JwtUserDto user, bool reuseRefreshToken);
 
         ClaimsPrincipal? GetPrincipalFromJwtToken(string? token);
 

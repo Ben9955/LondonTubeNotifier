@@ -15,8 +15,10 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         }
         public async Task<List<Line>> GetLinesAsync()
         {
-            return await _dbContext.Lines.AsNoTracking().ToListAsync();
-
+            return await _dbContext.Lines
+                .Include(l => l.LineStatuses)   
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<Line?> GetLineByLineIdAsync(string lineId)

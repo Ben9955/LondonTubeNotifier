@@ -25,6 +25,8 @@ namespace LondonTubeNotifier.Infrastructure.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var backoffSeconds = _pollingIntervalSeconds;
+
             _logger.LogInformation("TfL Line Status Worker is starting.");
 
             while (!stoppingToken.IsCancellationRequested)
@@ -38,6 +40,7 @@ namespace LondonTubeNotifier.Infrastructure.Workers
 
                     await monitorService.CheckForUpdatesAndNotifyAsync(stoppingToken);
 
+                    backoffSeconds = _pollingIntervalSeconds;
                 }
                 catch (TaskCanceledException)
                 {
@@ -47,9 +50,12 @@ namespace LondonTubeNotifier.Infrastructure.Workers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "An unhandled exception occurred in the TfL Line Status Worker.");
+
+                    backoffSeconds = Math.Min(backoffSeconds * 2, 3600);
                 }
 
-                await Task.Delay(_pollingIntervalSeconds * 1000, stoppingToken);
+                await Task.Delay(backoffSeconds * 1000, stoppingToken);
+                _logger.LogDebug("Next check in {Seconds} seconds", backoffSeconds);
 
             }
         }

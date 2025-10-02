@@ -1,4 +1,5 @@
 ﻿using LondonTubeNotifier.Core.Domain.Entities;
+using LondonTubeNotifier.Core.DTOs;
 
 namespace LondonTubeNotifier.Core.ServiceContracts
 {
@@ -14,5 +15,10 @@ namespace LondonTubeNotifier.Core.ServiceContracts
         /// <exception cref="TflApiException">Thrown if the TfL API request fails.</exception>
         /// <exception cref="JsonException">Thrown if the API response cannot be deserialized correctly.</exception>
         Task<Dictionary<string, HashSet<LineStatus>>> GetLinesStatusAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns all lines from TfL API as DTOs.
+        /// </summary>
+        Task<List<LineDto>> GetLinesAsync();
     }
 }

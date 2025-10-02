@@ -1,6 +1,4 @@
-import FeatureCard from "./FeatureCard";
-
-const features = [
+export const features = [
   {
     tag: "Realtime",
     title: "Instant Line Status Updates",
@@ -23,15 +21,3 @@ const features = [
       "https://cdn.pixabay.com/photo/2018/03/22/02/37/email-3249062_1280.png",
   },
 ];
-
-function Features() {
-  return (
-    <div className="mt-5 grid md:grid-cols-3 gap-5">
-      {features.map((f, i) => (
-        <FeatureCard key={i} {...f} />
-      ))}
-    </div>
-  );
-}
-
-export default Features;

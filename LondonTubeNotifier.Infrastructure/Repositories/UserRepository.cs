@@ -17,6 +17,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         public async Task<List<IUser>> GetUsersByLineIdAsync(string lineId, CancellationToken cancellationToken)
         {
             return (await _dbContext.Users
+                .AsNoTracking()
                 .Where(u => u.Subscriptions.Any(l => l.Id == lineId))
                 .ToListAsync(cancellationToken))
                 .Cast<IUser>()
@@ -26,6 +27,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         public async Task<List<UserSubscriptionDto>> GetUsersByLineIdsAsync(IEnumerable<string> lineIds, CancellationToken cancellationToken)
         {
             return await _dbContext.Users
+                .AsNoTracking()
                 .Where(u => u.Subscriptions.Any(s => lineIds.Contains(s.Id))) 
                 .SelectMany(
                 u => u.Subscriptions.Where(l => lineIds.Contains(l.Id)),
@@ -42,6 +44,7 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         public async Task<IUser?> GetUserWithSubscriptionsAsync(Guid id, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
+                .AsNoTracking()
                 .Include(u => u.Subscriptions)
                 .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 

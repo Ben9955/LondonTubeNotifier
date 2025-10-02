@@ -29,7 +29,7 @@
             <response code="401">Invalid credentials.</response>
             <remarks>Returns AccessToken and RefreshToken on success.</remarks>
         </member>
-        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GetLogout">
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.Logout">
             <summary>
             Logs out the user by clearing their refresh token.
             </summary>
@@ -37,7 +37,7 @@
             <response code="204">User logged out successfully.</response>
             <remarks>Clears refresh token from the database.</remarks>
         </member>
-        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GenerateNewAccessToken">
+        <member name="M:LondonTubeNotifier.WebApi.Controllers.AccountController.GenerateNewJwtToken">
             <summary>
             Generates a new access token using a valid refresh token.
             </summary>

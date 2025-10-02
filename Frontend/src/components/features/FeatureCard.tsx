@@ -16,7 +16,6 @@ const FeatureCard = ({ tag, title, description, imgUrl }: FeatureCardProps) => {
         />
       </div>
 
-      {/* <div className="p-5 md:w-2/3 flex flex-col justify-center"> */}
       <div className="p-5 flex flex-col flex-1">
         <p className="text-blue-600 font-semibold ">{tag}</p>
         <h5 className="font-semibold text-2xl my-2 ">{title}</h5>

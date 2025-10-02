@@ -37,8 +37,8 @@ namespace LondonTubeNotifier.WebApi.Controllers
         [Authorize]
         public async Task<IActionResult> SubscribeToLine(string lineId)
         {
-            _logger.LogInformation("Subscribe endpoint called");
             var userId = GetUserIdFromClaims();
+            _logger.LogInformation("User {UserId} subscribing to line {LineId}", userId, lineId);
             await _subscriptionService.SubscribeAsync(userId, lineId);
             return NoContent();
         }

@@ -7,6 +7,7 @@
         public string? Reason { get; set; }
         public int StatusSeverity { get; set; }
         public string StatusCssClass { get; set; } = string.Empty ;
+        public DateTimeOffset LastUpdate { get; set; }
     }
     public class LineStatusesDto
     {

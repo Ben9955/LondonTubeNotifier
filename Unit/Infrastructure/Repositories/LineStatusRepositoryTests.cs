@@ -30,14 +30,14 @@ namespace UnitTests.Infrastructure.Repositories
             _dbContext.LineStatuses.Add(new LineStatus { LineId = "line1", StatusDescription = "Old" });
             await _dbContext.SaveChangesAsync();
 
-            var newStatuses = new Dictionary<string, HashSet<LineStatus>>
+            var newStatuses = new Dictionary<string, List<LineStatus>>
             {
-                ["line1"] = new HashSet<LineStatus> { new LineStatus { LineId = "line1", StatusDescription = "New" } },
-                ["line2"] = new HashSet<LineStatus> { new LineStatus { LineId = "line2", StatusDescription = "New2" } }
+                ["line1"] = new List<LineStatus> { new LineStatus { LineId = "line1", StatusDescription = "New" } },
+                ["line2"] = new List<LineStatus> { new LineStatus { LineId = "line2", StatusDescription = "New2" } }
             };
 
             // Act
-            await _repository.SaveStatusAsync(newStatuses, CancellationToken.None);
+            await _repository.UpdateLinesAsync(newStatuses, CancellationToken.None);
 
             // Assert
             var allStatuses = await _dbContext.LineStatuses.ToListAsync();
@@ -53,10 +53,10 @@ namespace UnitTests.Infrastructure.Repositories
             _dbContext.LineStatuses.Add(new LineStatus { LineId = "line1", StatusDescription = "Old" });
             await _dbContext.SaveChangesAsync();
 
-            var emptyStatuses = new Dictionary<string, HashSet<LineStatus>>();
+            var emptyStatuses = new Dictionary<string, List<LineStatus>>();
 
             // Act
-            await _repository.SaveStatusAsync(emptyStatuses, CancellationToken.None);
+            await _repository.UpdateLinesAsync(emptyStatuses, CancellationToken.None);
 
             // Assert
             var allStatuses = await _dbContext.LineStatuses.ToListAsync();
@@ -129,16 +129,16 @@ namespace UnitTests.Infrastructure.Repositories
         {
             // Arrange
             // Forcing an exception by adding a null LineId
-            var badStatuses = new Dictionary<string, HashSet<LineStatus>>
+            var badStatuses = new Dictionary<string, List<LineStatus>>
             {
-                ["line1"] = new HashSet<LineStatus>
+                ["line1"] = new List<LineStatus>
                 {
                     new LineStatus { LineId = null!, StatusDescription = "Bad" }
                 }
             };
 
             // Act
-            Func<Task> act = async () => await _repository.SaveStatusAsync(badStatuses, CancellationToken.None);
+            Func<Task> act = async () => await _repository.UpdateLinesAsync(badStatuses, CancellationToken.None);
 
             // Assert
             await act.Should().ThrowAsync<DbUpdateException>();

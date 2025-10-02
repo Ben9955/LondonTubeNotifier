@@ -1,4 +1,4 @@
-import type { User } from "./sss";
+import type { User } from "./user";
 
 export type RegisterPayload = {
   username: string;
@@ -7,6 +7,8 @@ export type RegisterPayload = {
   confirmPassword: string;
   fullName?: string;
   phoneNumber?: string;
+  pushNotifications: boolean;
+  emailNotifications: boolean;
 };
 
 export type LoginPayload = {

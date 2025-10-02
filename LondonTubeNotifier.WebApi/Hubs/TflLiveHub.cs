@@ -1,4 +1,5 @@
 ﻿using LondonTubeNotifier.Core.ServiceContracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LondonTubeNotifier.WebApi.Hubs
@@ -11,22 +12,23 @@ namespace LondonTubeNotifier.WebApi.Hubs
             _onlineUsersTracker = onlineUsersTracker;
         }
 
+        [Authorize]
         public override async Task OnConnectedAsync()
         {
-            await base.OnConnectedAsync();
-
-            var userId = Context.UserIdentifier;
-            if (userId != null)
+            var userId = Context.UserIdentifier?.ToUpperInvariant();
+            if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.AddUser(userId, Context.ConnectionId);
             }
+
+            await base.OnConnectedAsync();
         }
 
+        [Authorize]
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.UserIdentifier;
-
-            if (userId != null)
+            var userId = Context.UserIdentifier?.ToUpperInvariant();
+            if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.RemoveUser(userId, Context.ConnectionId);
             }
@@ -39,9 +41,13 @@ namespace LondonTubeNotifier.WebApi.Hubs
         /// This is used by the client-side code when navigating to a page that requires real-time updates.
         /// </summary>
         /// <param name="groupName">The name of the group to join (e.g., "homepage-group").</param>
+        [AllowAnonymous]
         public async Task JoinGroup(string groupName)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            if (!string.IsNullOrEmpty(groupName))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            }
         }
 
 
@@ -50,9 +56,13 @@ namespace LondonTubeNotifier.WebApi.Hubs
         /// This is used by the client-side code when navigating away from a page.
         /// </summary>
         /// <param name="groupName">The name of the group to leave.</param>
+        [AllowAnonymous]
         public async Task LeaveGroup(string groupName)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            if (!string.IsNullOrEmpty(groupName))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            }
         }
 
     }

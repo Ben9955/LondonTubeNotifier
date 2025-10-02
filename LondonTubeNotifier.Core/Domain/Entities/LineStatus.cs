@@ -8,7 +8,7 @@
         public int StatusSeverity { get; set; }
         public string StatusDescription { get; set; } = string.Empty;
         public string? Reason { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         public override bool Equals(object? obj)
         {

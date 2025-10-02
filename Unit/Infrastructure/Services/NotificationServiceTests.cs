@@ -9,7 +9,7 @@ namespace UnitTests.Infrastructure.Services
     public class NotificationServiceTests
     {
         private readonly Mock<IUserOnlineChecker> _onlineCheckerMock;
-        private readonly Mock<IEmailService> _emailServiceMock;
+        private readonly Mock<IEmailNotifier> _emailServiceMock;
         private readonly Mock<IRealtimeNotifier> _realtimeNotifierMock;
         private readonly Mock<ILogger<NotificationService>> _loggerMock;
         private readonly NotificationService _service;
@@ -17,7 +17,7 @@ namespace UnitTests.Infrastructure.Services
         public NotificationServiceTests()
         {
             _onlineCheckerMock = new Mock<IUserOnlineChecker>();
-            _emailServiceMock = new Mock<IEmailService>();
+            _emailServiceMock = new Mock<IEmailNotifier>();
             _realtimeNotifierMock = new Mock<IRealtimeNotifier>();
             _loggerMock = new Mock<ILogger<NotificationService>>();
 

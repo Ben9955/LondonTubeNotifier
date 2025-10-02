@@ -7,6 +7,7 @@ using LondonTubeNotifier.Core.Services;
 using LondonTubeNotifier.Infrastructure.Data;
 using LondonTubeNotifier.Infrastructure.Entities;
 using LondonTubeNotifier.Infrastructure.ExternalAPIs;
+using LondonTubeNotifier.Infrastructure.Mappers;
 using LondonTubeNotifier.Infrastructure.Repositories;
 using LondonTubeNotifier.Infrastructure.Services;
 using LondonTubeNotifier.Infrastructure.Workers;
@@ -14,11 +15,11 @@ using LondonTubeNotifier.WebApi.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RazorLight;
+using System.Security.Claims;
 using System.Text;
 
 
@@ -34,19 +35,23 @@ namespace LondonTubeNotifier.WebApi.Extensions
 
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            services.AddScoped<LineRepository>();
-            services.AddScoped<ILineRepository>(sp =>
-                new CachedLineRepository(
-                    sp.GetRequiredService<IMemoryCache>(),
-                    sp.GetRequiredService<LineRepository>()
-                ));
+            //services.AddScoped<LineRepository>();
+            //services.AddScoped<ILineRepository>(sp =>
+            //    new CachedLineRepository(
+            //        sp.GetRequiredService<IMemoryCache>(),
+            //        sp.GetRequiredService<LineRepository>()
+            //    ));
+            services.AddScoped<ILineRepository, LineRepository>();
 
-            services.AddScoped<LineStatusRepository>();
-            services.AddScoped<ILineStatusRepository>(sp =>
-                new CachedLineStatusRepository(
-                    sp.GetRequiredService<IMemoryCache>(),
-                    sp.GetRequiredService<LineStatusRepository>()
-                ));
+
+            //services.AddScoped<ILineStatusRepository, LineStatusRepository>();
+            //services.AddScoped<ILineStatusRepository>(sp =>
+            //new CachedLineStatusRepository(
+            //    sp.GetRequiredService<IMemoryCache>(),
+            //    sp.GetRequiredService<LineStatusRepository>()
+            //));
+            services.AddScoped<ILineStatusRepository, LineStatusRepository>();
+
 
             services.AddScoped<IUserRepository, UserRepository>();
             return services;
@@ -58,8 +63,11 @@ namespace LondonTubeNotifier.WebApi.Extensions
             services.AddScoped<IUserLineSubscriptionService, UserLineSubscriptionService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<ITflStatusMonitorService, TflStatusMonitorService>();
-            services.AddScoped<IEmailService, EmailService>();
             services.AddSingleton<ILineMapper, LineMapper>();
+            services.AddSingleton<ITflLineStatusMapper, TflLineStatusMapper>();
+            services.AddSingleton<ILineStatusToDtoMapper, LineStatusToDtoMapper>();
+            services.AddSingleton<INotificationMapper, NotificationMapper>();
+            services.AddSingleton<ILineStatusChangeDetector, LineStatusChangeDetector>();
             return services;
         }
 
@@ -93,8 +101,25 @@ namespace LondonTubeNotifier.WebApi.Extensions
                     ValidAudience = configuration["JwtSettings:Audience"],
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!)),
+                    NameClaimType = ClaimTypes.NameIdentifier
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/TflLiveHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
+
             });
             return services;
         }
@@ -134,8 +159,13 @@ namespace LondonTubeNotifier.WebApi.Extensions
 
         public static IServiceCollection AddSignalRHubs(this IServiceCollection services)
         {
-            services.AddSignalR();
-            services.AddSingleton<IUserOnlineChecker, OnlineUsersTracker>();
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            services.AddSingleton<OnlineUsersTracker>();
+            services.AddSingleton<IOnlineUsersTracker>(sp => sp.GetRequiredService<OnlineUsersTracker>());
+            services.AddSingleton<IUserOnlineChecker>(sp => sp.GetRequiredService<OnlineUsersTracker>());
             services.AddSingleton<IRealtimeNotifier, SignalRRealtimeNotifier>();
             return services;
         }
@@ -146,7 +176,7 @@ namespace LondonTubeNotifier.WebApi.Extensions
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("http://localhost:5173")
+                    builder.WithOrigins("https://localhost:5173")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
@@ -154,14 +184,22 @@ namespace LondonTubeNotifier.WebApi.Extensions
             });
             return services;
         }
-
         public static IServiceCollection AddNotificationsAndEmail(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+
+            services.AddScoped<IEmailSender, SendGridEmailSender>();
+
+            services.AddScoped<IEmailNotifier, EmailService>();
+
+            var templatesAssembly = typeof(EmailTemplateService).Assembly;
+
             var razorEngine = new RazorLightEngineBuilder()
-                .UseEmbeddedResourcesProject(typeof(EmailTemplateService))
+                .UseEmbeddedResourcesProject(templatesAssembly) 
                 .UseMemoryCachingProvider()
+                .EnableDebugMode()
                 .Build();
+
             services.AddSingleton<IRazorLightEngine>(razorEngine);
             services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
             return services;
