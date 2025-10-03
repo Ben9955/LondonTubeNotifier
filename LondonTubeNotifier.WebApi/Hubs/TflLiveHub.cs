@@ -7,9 +7,11 @@ namespace LondonTubeNotifier.WebApi.Hubs
     public class TflLiveHub : Hub
     {
         private readonly IOnlineUsersTracker _onlineUsersTracker;
-        public TflLiveHub(IOnlineUsersTracker onlineUsersTracker)
+        private readonly ILogger<TflLiveHub> _logger;
+        public TflLiveHub(IOnlineUsersTracker onlineUsersTracker, ILogger<TflLiveHub> logger)
         {
             _onlineUsersTracker = onlineUsersTracker;
+            _logger = logger;
         }
 
         [Authorize]
@@ -20,6 +22,7 @@ namespace LondonTubeNotifier.WebApi.Hubs
             if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.AddUser(userId, Context.ConnectionId);
+                _logger.LogInformation("User {UserId} connected with ConnectionId {ConnectionId}", userId, Context.ConnectionId);
             }
 
             await base.OnConnectedAsync();
@@ -33,6 +36,7 @@ namespace LondonTubeNotifier.WebApi.Hubs
             if (!string.IsNullOrEmpty(userId))
             {
                 _onlineUsersTracker.RemoveUser(userId, Context.ConnectionId);
+                _logger.LogInformation("User {UserId} disconnected with ConnectionId {ConnectionId}", userId, Context.ConnectionId);
             }
 
             await base.OnDisconnectedAsync(exception);

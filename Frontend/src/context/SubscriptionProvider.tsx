@@ -30,7 +30,6 @@ export function SubscriptionProvider({
   }, [isAuthenticated]);
 
   const toggleSubscription = async (line: Line, current: boolean) => {
-    console.log(line);
     try {
       if (current) {
         await api.delete(`/subscriptions/line/${line.id}`);

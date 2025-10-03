@@ -19,7 +19,7 @@ namespace LondonTubeNotifier.WebApi.Hubs
         {
             if (string.IsNullOrEmpty(userId)) return;
                         
-            _logger.LogInformation("Sending real-time notification to user {UserId}", normalizedUserId);
+            _logger.LogInformation("Sending real-time notification to user {UserId}", userId);
 
             // Send notification via SignalR
             await _hubContext.Clients.User(userId.ToLowerInvariant())

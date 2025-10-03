@@ -44,7 +44,6 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         public async Task<IUser?> GetUserWithSubscriptionsAsync(Guid id, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
-                .AsNoTracking()
                 .Include(u => u.Subscriptions)
                 .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 

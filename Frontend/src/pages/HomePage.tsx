@@ -106,7 +106,11 @@ const HomePage = () => {
         title="Your Subscribed Lines"
         description="Quick access to the lines you care about"
       >
-        {subscribedLineData.length === 0 ? (
+        {!isAuthenticated ? (
+          <p className="text-center text-gray-400">
+            Sign in to subscribe and get notified.
+          </p>
+        ) : subscribedLineData.length === 0 ? (
           <p className="text-center text-gray-400">
             You haven't subscribed to any lines yet.
           </p>

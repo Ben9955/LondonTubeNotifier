@@ -28,7 +28,6 @@ export default function App() {
 
         offLineUpdate();
         onLineUpdate((data) => {
-          console.log("🔥 Global line update:", data);
           showLineUpdateToast(data);
         });
       }

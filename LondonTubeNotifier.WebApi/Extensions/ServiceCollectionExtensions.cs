@@ -15,6 +15,7 @@ using LondonTubeNotifier.WebApi.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -35,22 +36,22 @@ namespace LondonTubeNotifier.WebApi.Extensions
 
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            //services.AddScoped<LineRepository>();
-            //services.AddScoped<ILineRepository>(sp =>
-            //    new CachedLineRepository(
-            //        sp.GetRequiredService<IMemoryCache>(),
-            //        sp.GetRequiredService<LineRepository>()
-            //    ));
-            services.AddScoped<ILineRepository, LineRepository>();
+            services.AddScoped<LineRepository>();
+            services.AddScoped<ILineRepository>(sp =>
+                new CachedLineRepository(
+                    sp.GetRequiredService<IMemoryCache>(),
+                    sp.GetRequiredService<LineRepository>()
+                ));
+            //services.AddScoped<ILineRepository, LineRepository>();
 
 
+            services.AddScoped<LineStatusRepository>();
+            services.AddScoped<ILineStatusRepository>(sp =>
+            new CachedLineStatusRepository(
+                sp.GetRequiredService<IMemoryCache>(),
+                sp.GetRequiredService<LineStatusRepository>()
+            ));
             //services.AddScoped<ILineStatusRepository, LineStatusRepository>();
-            //services.AddScoped<ILineStatusRepository>(sp =>
-            //new CachedLineStatusRepository(
-            //    sp.GetRequiredService<IMemoryCache>(),
-            //    sp.GetRequiredService<LineStatusRepository>()
-            //));
-            services.AddScoped<ILineStatusRepository, LineStatusRepository>();
 
 
             services.AddScoped<IUserRepository, UserRepository>();

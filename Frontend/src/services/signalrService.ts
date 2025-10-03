@@ -11,7 +11,7 @@ export const startConnection = async (): Promise<signalR.HubConnection> => {
       accessTokenFactory: () => getAccessToken() || "",
     })
     .withAutomaticReconnect()
-    .configureLogging(signalR.LogLevel.Trace)
+    .configureLogging(signalR.LogLevel.Error)
     .build();
 
   connection.onclose(() => {

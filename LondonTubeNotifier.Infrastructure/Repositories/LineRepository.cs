@@ -43,12 +43,15 @@ namespace LondonTubeNotifier.Infrastructure.Repositories
         
         public async Task DeleteSubscriptionAsync(IUser user, Line line)
         {
-            var subscriptionToRemove = user.Subscriptions.FirstOrDefault(s => s.Id == line.Id);
 
+            var subscriptionToRemove = user.Subscriptions.FirstOrDefault(s => s.Id == line.Id);
             if (subscriptionToRemove != null)
             {
                 user.Subscriptions.Remove(subscriptionToRemove);
                 await _dbContext.SaveChangesAsync();
+            } else
+            {
+                throw new InvalidOperationException("Subscription not found for the user.");
             }
         }
 

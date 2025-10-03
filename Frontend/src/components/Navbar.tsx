@@ -4,7 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/features", label: "Features" },
   { to: "/about", label: "About" },
 ];
 
